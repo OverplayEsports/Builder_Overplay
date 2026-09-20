@@ -256,12 +256,20 @@ export const INITIAL_EVENTS: EventItem[] = [
 ];
 
 export const DEFAULT_CLOUDFLARE_CONFIG: CloudflareConfig = {
-  accountId: "a7d64e57350dbbddcc2b65f7d8ede3a0",
-  bucketName: "imagenesoverplay",
-  accessKeyId: "cbce2ec53f08bc186b64d463df8325f0",
-  secretAccessKey: "aaf8802d017d1da21588dc44e4bb886e5ed1cfddad234900faa874fe1ff0e780",
-  publicUrl: "https://pub-def6d9ceb4ef4e8f84ee8a391d2b0b27.r2.dev",
+  accountId:
+    import.meta.env.VITE_CLOUDFLARE_ACCOUNT_ID || "a7d64e57350dbbddcc2b65f7d8ede3a0",
+  bucketName:
+    import.meta.env.VITE_CLOUDFLARE_BUCKET_NAME || "imagenesoverplay",
+  accessKeyId:
+    import.meta.env.VITE_CLOUDFLARE_ACCESS_KEY_ID || "cbce2ec53f08bc186b64d463df8325f0",
+  secretAccessKey:
+    import.meta.env.VITE_CLOUDFLARE_SECRET_ACCESS_KEY ||
+    "aaf8802d017d1da21588dc44e4bb886e5ed1cfddad234900faa874fe1ff0e780",
+  publicUrl:
+    import.meta.env.VITE_CLOUDFLARE_PUBLIC_URL ||
+    "https://pub-def6d9ceb4ef4e8f84ee8a391d2b0b27.r2.dev",
 };
+
 
 export const INITIAL_NEWS: NewsArticle[] = [
   {
