@@ -501,16 +501,48 @@ ON public.tournament_registrations FOR DELETE USING (true);
           <span className="mt-3 text-xs text-white/50">Cargando inscripciones desde Supabase...</span>
         </div>
       ) : filteredRegistrations.length === 0 ? (
-        <div className="flex h-64 flex-col items-center justify-center rounded-2xl border border-white/10 bg-white/[0.02] text-center p-6">
-          <Users className="h-10 w-10 text-white/20 mb-2" />
-          <p className="text-sm font-semibold text-white/70">No se encontraron inscripciones</p>
-          <p className="mt-1 text-xs text-white/40 max-w-sm">
-            {searchQuery || statusFilter !== "all" || roleFilter !== "all" || captainFilter !== "all"
-              ? "Prueba cambiando los filtros de búsqueda."
+        <div className="flex h-72 flex-col items-center justify-center rounded-2xl border border-white/10 bg-white/[0.02] text-center p-6">
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-white/30 mb-3">
+            {activeTabFilter === "captain" ? (
+              <Crown className="h-7 w-7 text-amber-400/50" />
+            ) : (
+              <Users className="h-7 w-7 text-white/40" />
+            )}
+          </div>
+          <p className="text-base font-bold text-white/80">
+            {activeTabFilter === "captain"
+              ? "No hay solicitudes de Capitanes actualmente"
+              : activeTabFilter === "approved"
+              ? "No hay participantes Aprobados en este momento"
+              : activeTabFilter === "pending"
+              ? "No hay solicitudes Pendientes de revisión"
+              : activeTabFilter === "rejected"
+              ? "No hay inscripciones Rechazadas"
+              : "No se encontraron inscripciones con ese criterio"}
+          </p>
+          <p className="mt-1.5 text-xs text-white/40 max-w-md">
+            {searchQuery
+              ? `No hay resultados para "${searchQuery}". Prueba borrando el texto de búsqueda.`
+              : activeTabFilter !== "all"
+              ? "Cambia de filtro o pulsa el botón abajo para ver todas las inscripciones registradas."
               : "Cuando los participantes rellenen el formulario en la web, aparecerán aquí en tiempo real."}
           </p>
+
+          {(activeTabFilter !== "all" || searchQuery) && (
+            <button
+              type="button"
+              onClick={() => {
+                setActiveTabFilter("all");
+                setSearchQuery("");
+              }}
+              className="mt-4 flex items-center gap-1.5 rounded-xl border border-orange-500/40 bg-orange-500/15 px-4 py-2 text-xs font-bold text-orange-300 transition-all hover:bg-orange-500 hover:text-white"
+            >
+              <span>Ver todas las inscripciones</span>
+            </button>
+          )}
         </div>
       ) : (
+
         <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-3">
           {filteredRegistrations.map((reg) => {
             const isCapt = reg.isCaptain;
