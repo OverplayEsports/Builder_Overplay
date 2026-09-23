@@ -138,7 +138,7 @@ VALUES (
   'Pamache',
   'superadmin',
   'approved',
-  '["about", "events", "competitive", "news", "allies", "hero", "ticker", "cta"]'::jsonb,
+  '["about", "events", "competitive", "news", "allies", "hero", "ticker", "cta", "registrations"]'::jsonb,
   NOW(),
   NOW(),
   NOW()
@@ -147,7 +147,7 @@ ON CONFLICT (email) DO UPDATE
 SET role = 'superadmin',
     status = 'approved',
     username = 'Pamache',
-    allowed_sections = '["about", "events", "competitive", "news", "allies", "hero", "ticker", "cta"]'::jsonb,
+    allowed_sections = '["about", "events", "competitive", "news", "allies", "hero", "ticker", "cta", "registrations"]'::jsonb,
     updated_at = NOW();
 `;
 

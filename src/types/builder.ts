@@ -157,7 +157,8 @@ export type BuilderSectionKey =
   | "allies"
   | "hero"
   | "ticker"
-  | "cta";
+  | "cta"
+  | "registrations";
 
 export type UserRole = "superadmin" | "editor";
 export type UserStatus = "pending" | "approved" | "rejected";
@@ -214,8 +215,10 @@ export type BuilderTab =
   | "hero"
   | "ticker"
   | "cta"
+  | "registrations"
   | "users"
   | "code";
+
 
 export interface BuilderState {
   teamGroups: TeamGroup[];

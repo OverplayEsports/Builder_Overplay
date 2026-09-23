@@ -694,6 +694,12 @@ export const BUILDER_SECTIONS_LIST: {
     description: "Tarjeta de llamada a la acción y enlaces de Discord.",
     tag: "Conversión",
   },
+  {
+    id: "registrations",
+    title: "Inscripciones al Torneo",
+    description: "Visualización de participantes, rangos, perfiles de carrera en R2 y aprobación.",
+    tag: "Inscripciones",
+  },
 ];
 
 export const SUPER_ADMIN_EMAIL = "pamacheyt@gmail.com";
@@ -715,12 +721,14 @@ export const INITIAL_BUILDER_USERS: BuilderUser[] = [
       "hero",
       "ticker",
       "cta",
+      "registrations",
     ],
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     approvedAt: new Date().toISOString(),
   },
 ];
+
 
 export const DEFAULT_HERO_CONFIG: HeroConfig = {
   eyebrow: "Organización de Esports — Overwatch",

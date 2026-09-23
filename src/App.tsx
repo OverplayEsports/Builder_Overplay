@@ -10,6 +10,7 @@ import { AlliesEditor } from "./components/builder/AlliesEditor";
 import { HeroEditor } from "./components/builder/HeroEditor";
 import { TickerEditor } from "./components/builder/TickerEditor";
 import { CtaEditor } from "./components/builder/CtaEditor";
+import { RegistrationsEditor } from "./components/builder/RegistrationsEditor";
 import { UsersManagementEditor } from "./components/builder/UsersManagementEditor";
 import { AuthGate } from "./components/auth/AuthGate";
 import { SetUsernameModal } from "./components/auth/SetUsernameModal";
@@ -60,11 +61,13 @@ function MainBuilderContent() {
         {activeTab === "hero" && hasPermission("hero") && <HeroEditor />}
         {activeTab === "ticker" && hasPermission("ticker") && <TickerEditor />}
         {activeTab === "cta" && hasPermission("cta") && <CtaEditor />}
+        {activeTab === "registrations" && hasPermission("registrations") && <RegistrationsEditor />}
         {activeTab === "users" && isSuperAdmin && <UsersManagementEditor />}
       </main>
     </div>
   );
 }
+
 
 export default function App() {
   return (

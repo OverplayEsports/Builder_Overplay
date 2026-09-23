@@ -138,6 +138,19 @@ export function DashboardOverview({
       highlight: true,
     },
     {
+      id: "registrations",
+      title: "Inscripciones al Torneo",
+      tag: "En Vivo · Supabase",
+      icon: Users,
+      status: "Gestor de Participantes",
+      description: "Revisa participantes, si son capitanes, Discord, BattleTag, rangos de rol y fotos de carrera en R2.",
+      actionLabel: "Ver Inscripciones",
+      onAction: () => setActiveTab("registrations"),
+      color: "from-amber-500/20 to-orange-500/10",
+      accentBorder: "border-amber-500/40",
+      highlight: true,
+    },
+    {
       id: "cta",
       title: "Recuadro para Participar",
       tag: "CMS Completo",
@@ -151,6 +164,7 @@ export function DashboardOverview({
       highlight: true,
     },
   ];
+
 
   return (
     <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6">
