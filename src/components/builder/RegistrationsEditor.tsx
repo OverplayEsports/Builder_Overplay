@@ -30,13 +30,14 @@ import {
   OVERWATCH_RANKS,
 } from "../../types/tournament";
 
+export type TabFilter = "all" | "captain" | "approved" | "pending" | "rejected";
+
 export function RegistrationsEditor() {
   const [registrations, setRegistrations] = useState<TournamentRegistrationData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [roleFilter, setRoleFilter] = useState<string>("all");
-  const [captainFilter, setCaptainFilter] = useState<string>("all");
+  const [activeTabFilter, setActiveTabFilter] = useState<TabFilter>("all");
+
 
   // Selected registration for details/lightbox
   const [selectedReg, setSelectedReg] = useState<TournamentRegistrationData | null>(null);
@@ -218,16 +219,20 @@ export function RegistrationsEditor() {
       r.draftName.toLowerCase().includes(q) ||
       r.battleNetId.toLowerCase().includes(q) ||
       r.discordId.toLowerCase().includes(q) ||
-      r.favoriteHero.toLowerCase().includes(q);
+      r.favoriteHero.toLowerCase().includes(q) ||
+      r.preferredRole.toLowerCase().includes(q) ||
+      r.rankTank.toLowerCase().includes(q) ||
+      r.rankDps.toLowerCase().includes(q) ||
+      r.rankSupport.toLowerCase().includes(q);
 
-    const matchesStatus = statusFilter === "all" || r.status === statusFilter;
-    const matchesRole = roleFilter === "all" || r.preferredRole === roleFilter;
-    const matchesCaptain =
-      captainFilter === "all" ||
-      (captainFilter === "captain" && r.isCaptain) ||
-      (captainFilter === "player" && !r.isCaptain);
+    if (!matchesQuery) return false;
 
-    return matchesQuery && matchesStatus && matchesRole && matchesCaptain;
+    if (activeTabFilter === "all") return true;
+    if (activeTabFilter === "captain") return r.isCaptain;
+    if (activeTabFilter === "approved") return r.status === "approved";
+    if (activeTabFilter === "pending") return r.status === "pending";
+    if (activeTabFilter === "rejected") return r.status === "rejected";
+    return true;
   });
 
   // Metrics
@@ -236,6 +241,7 @@ export function RegistrationsEditor() {
   const approvedCount = registrations.filter((r) => r.status === "approved").length;
   const pendingCount = registrations.filter((r) => r.status === "pending").length;
   const rejectedCount = registrations.filter((r) => r.status === "rejected").length;
+
 
   const getRankImage = (rankName: string) => {
     const found = OVERWATCH_RANKS.find((r) => r.id === rankName);
@@ -360,94 +366,133 @@ ON public.tournament_registrations FOR DELETE USING (true);
         </div>
       )}
 
-      {/* Métricas / Contadores */}
+      {/* Métricas / Filtros interactivos por estado */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
-        <div className="rounded-xl border border-white/10 bg-white/[0.02] p-4 text-center">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-white/50">
+        {/* TOTAL INSCRITOS */}
+        <button
+          type="button"
+          onClick={() => setActiveTabFilter("all")}
+          className={`group relative rounded-2xl border p-4 text-center transition-all cursor-pointer ${
+            activeTabFilter === "all"
+              ? "border-white/50 bg-white/10 ring-2 ring-white/30 shadow-lg shadow-white/5"
+              : "border-white/10 bg-white/[0.02] hover:border-white/25 hover:bg-white/[0.05]"
+          }`}
+        >
+          <span className="text-[11px] font-bold uppercase tracking-wider text-white/70 block">
             Total Inscritos
           </span>
-          <div className="mt-1 text-2xl font-black text-white">{totalCount}</div>
-        </div>
+          <div className="mt-1.5 text-2xl font-black text-white">{totalCount}</div>
+          {activeTabFilter === "all" && (
+            <span className="absolute bottom-1.5 left-1/2 -translate-x-1/2 h-1 w-6 rounded-full bg-white" />
+          )}
+        </button>
 
-        <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-4 text-center">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-amber-400/70 flex items-center justify-center gap-1">
-            <Crown className="h-3 w-3" /> Capitanes
+        {/* CAPITANES */}
+        <button
+          type="button"
+          onClick={() => setActiveTabFilter("captain")}
+          className={`group relative rounded-2xl border p-4 text-center transition-all cursor-pointer ${
+            activeTabFilter === "captain"
+              ? "border-amber-400 bg-amber-500/20 ring-2 ring-amber-500/40 shadow-lg shadow-amber-500/15"
+              : "border-amber-500/20 bg-amber-500/5 hover:border-amber-500/40 hover:bg-amber-500/10"
+          }`}
+        >
+          <span className="text-[11px] font-bold uppercase tracking-wider text-amber-300 flex items-center justify-center gap-1">
+            <Crown className="h-3.5 w-3.5 text-amber-400" /> Capitanes
           </span>
-          <div className="mt-1 text-2xl font-black text-amber-300">{captainsCount}</div>
-        </div>
+          <div className="mt-1.5 text-2xl font-black text-amber-300">{captainsCount}</div>
+          {activeTabFilter === "captain" && (
+            <span className="absolute bottom-1.5 left-1/2 -translate-x-1/2 h-1 w-6 rounded-full bg-amber-400" />
+          )}
+        </button>
 
-        <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-4 text-center">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-emerald-400/70">
+        {/* APROBADOS */}
+        <button
+          type="button"
+          onClick={() => setActiveTabFilter("approved")}
+          className={`group relative rounded-2xl border p-4 text-center transition-all cursor-pointer ${
+            activeTabFilter === "approved"
+              ? "border-emerald-400 bg-emerald-500/20 ring-2 ring-emerald-500/40 shadow-lg shadow-emerald-500/15"
+              : "border-emerald-500/20 bg-emerald-500/5 hover:border-emerald-500/40 hover:bg-emerald-500/10"
+          }`}
+        >
+          <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-300 block">
             Aprobados
           </span>
-          <div className="mt-1 text-2xl font-black text-emerald-400">{approvedCount}</div>
-        </div>
+          <div className="mt-1.5 text-2xl font-black text-emerald-400">{approvedCount}</div>
+          {activeTabFilter === "approved" && (
+            <span className="absolute bottom-1.5 left-1/2 -translate-x-1/2 h-1 w-6 rounded-full bg-emerald-400" />
+          )}
+        </button>
 
-        <div className="rounded-xl border border-orange-500/20 bg-orange-500/5 p-4 text-center">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-orange-400/70">
+        {/* PENDIENTES */}
+        <button
+          type="button"
+          onClick={() => setActiveTabFilter("pending")}
+          className={`group relative rounded-2xl border p-4 text-center transition-all cursor-pointer ${
+            activeTabFilter === "pending"
+              ? "border-orange-400 bg-orange-500/20 ring-2 ring-orange-500/40 shadow-lg shadow-orange-500/15"
+              : "border-orange-500/20 bg-orange-500/5 hover:border-orange-500/40 hover:bg-orange-500/10"
+          }`}
+        >
+          <span className="text-[11px] font-bold uppercase tracking-wider text-orange-300 block">
             Pendientes
           </span>
-          <div className="mt-1 text-2xl font-black text-orange-400">{pendingCount}</div>
-        </div>
+          <div className="mt-1.5 text-2xl font-black text-orange-400">{pendingCount}</div>
+          {activeTabFilter === "pending" && (
+            <span className="absolute bottom-1.5 left-1/2 -translate-x-1/2 h-1 w-6 rounded-full bg-orange-400" />
+          )}
+        </button>
 
-        <div className="rounded-xl border border-red-500/20 bg-red-500/5 p-4 text-center">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-red-400/70">
+        {/* RECHAZADOS */}
+        <button
+          type="button"
+          onClick={() => setActiveTabFilter("rejected")}
+          className={`group relative rounded-2xl border p-4 text-center transition-all cursor-pointer ${
+            activeTabFilter === "rejected"
+              ? "border-red-400 bg-red-500/20 ring-2 ring-red-500/40 shadow-lg shadow-red-500/15"
+              : "border-red-500/20 bg-red-500/5 hover:border-red-500/40 hover:bg-red-500/10"
+          }`}
+        >
+          <span className="text-[11px] font-bold uppercase tracking-wider text-red-300 block">
             Rechazados
           </span>
-          <div className="mt-1 text-2xl font-black text-red-400">{rejectedCount}</div>
-        </div>
+          <div className="mt-1.5 text-2xl font-black text-red-400">{rejectedCount}</div>
+          {activeTabFilter === "rejected" && (
+            <span className="absolute bottom-1.5 left-1/2 -translate-x-1/2 h-1 w-6 rounded-full bg-red-400" />
+          )}
+        </button>
       </div>
 
-      {/* Barra de Filtros y Búsqueda */}
-      <div className="flex flex-col gap-3 rounded-xl border border-white/10 bg-white/[0.02] p-3.5 sm:flex-row sm:items-center">
-        {/* Input de Búsqueda */}
+      {/* Barra de Búsqueda Rápida */}
+      <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.02] p-2 sm:p-3">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40" />
+          <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40" />
           <input
             type="text"
-            placeholder="Buscar por BattleNet, Discord, Nombre Draft o Héroe..."
+            placeholder="Buscar por BattleNet (#), Discord, Nombre en Draft, Héroe o Rol..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full rounded-lg border border-white/10 bg-black/40 py-2 pl-9 pr-4 text-xs text-white placeholder-white/30 focus:border-orange-500 focus:outline-none sm:text-sm"
+            className="w-full rounded-lg border border-white/10 bg-black/40 py-2.5 pl-10 pr-4 text-xs text-white placeholder-white/35 focus:border-orange-500 focus:bg-black/60 focus:outline-none sm:text-sm"
           />
+          {searchQuery && (
+            <button
+              type="button"
+              onClick={() => setSearchQuery("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-white/40 hover:text-white"
+            >
+              ✕
+            </button>
+          )}
         </div>
 
-        {/* Filtro de Estado */}
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="rounded-lg border border-white/10 bg-black/40 px-3 py-2 text-xs text-white focus:border-orange-500 focus:outline-none"
-        >
-          <option value="all">Todos los Estados</option>
-          <option value="pending">Pendientes</option>
-          <option value="approved">Aprobados</option>
-          <option value="rejected">Rechazados</option>
-        </select>
-
-        {/* Filtro de Rol */}
-        <select
-          value={roleFilter}
-          onChange={(e) => setRoleFilter(e.target.value)}
-          className="rounded-lg border border-white/10 bg-black/40 px-3 py-2 text-xs text-white focus:border-orange-500 focus:outline-none"
-        >
-          <option value="all">Todos los Roles</option>
-          <option value="Tanque">Tanque</option>
-          <option value="DPS">DPS</option>
-          <option value="Support">Support</option>
-          <option value="Todos los Roles">Todos los Roles</option>
-        </select>
-
-        {/* Filtro de Capitanes */}
-        <select
-          value={captainFilter}
-          onChange={(e) => setCaptainFilter(e.target.value)}
-          className="rounded-lg border border-white/10 bg-black/40 px-3 py-2 text-xs text-white focus:border-orange-500 focus:outline-none"
-        >
-          <option value="all">Todos (Capitanes y Jugadores)</option>
-          <option value="captain">Solo Capitanes</option>
-          <option value="player">Solo Jugadores</option>
-        </select>
+        <div className="hidden sm:flex items-center px-3 py-1.5 rounded-lg border border-white/10 bg-black/30 text-xs font-semibold text-white/60">
+          <span>
+            Mostrando {filteredRegistrations.length} de {registrations.length}
+          </span>
+        </div>
       </div>
+
 
       {/* Lista / Tabla de Participantes */}
       {isLoading ? (
