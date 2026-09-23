@@ -571,56 +571,78 @@ ON public.tournament_registrations FOR DELETE USING (true);
                       </span>
                     </div>
 
-                    {/* Medallas de Rango */}
-                    <div className="grid grid-cols-3 gap-1.5 text-center">
-                      <div className="rounded-lg border border-white/5 bg-black/30 p-2">
-                        <span className="text-[10px] font-bold text-blue-400 block">TANQUE</span>
-                        <div className="mt-1 flex flex-col items-center justify-center">
+                    {/* Medallas de Rango — Imagen grande a la izquierda, rol y rango a la derecha */}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                      {/* TANQUE */}
+                      <div className="flex items-center gap-2.5 rounded-xl border border-blue-500/20 bg-blue-500/[0.04] p-2.5">
+                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-black/50 p-1">
                           {getRankImage(reg.rankTank) ? (
                             <img
                               src={getRankImage(reg.rankTank)}
                               alt={reg.rankTank}
-                              className="h-6 w-6 object-contain"
+                              className="h-full w-full object-contain drop-shadow-[0_2px_8px_rgba(59,130,246,0.45)]"
                             />
                           ) : (
-                            <span className="text-[10px] text-white/40">Unranked</span>
+                            <span className="text-[9px] text-white/30">N/A</span>
                           )}
-                          <span className="text-[10px] text-white/80 font-medium">{reg.rankTank}</span>
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <span className="text-[10px] font-black tracking-wider text-blue-400 block uppercase leading-tight">
+                            TANQUE
+                          </span>
+                          <span className="text-xs font-bold text-white truncate block leading-tight mt-0.5">
+                            {reg.rankTank}
+                          </span>
                         </div>
                       </div>
 
-                      <div className="rounded-lg border border-white/5 bg-black/30 p-2">
-                        <span className="text-[10px] font-bold text-red-400 block">DPS</span>
-                        <div className="mt-1 flex flex-col items-center justify-center">
+                      {/* DPS */}
+                      <div className="flex items-center gap-2.5 rounded-xl border border-red-500/20 bg-red-500/[0.04] p-2.5">
+                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-black/50 p-1">
                           {getRankImage(reg.rankDps) ? (
                             <img
                               src={getRankImage(reg.rankDps)}
                               alt={reg.rankDps}
-                              className="h-6 w-6 object-contain"
+                              className="h-full w-full object-contain drop-shadow-[0_2px_8px_rgba(239,68,68,0.45)]"
                             />
                           ) : (
-                            <span className="text-[10px] text-white/40">Unranked</span>
+                            <span className="text-[9px] text-white/30">N/A</span>
                           )}
-                          <span className="text-[10px] text-white/80 font-medium">{reg.rankDps}</span>
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <span className="text-[10px] font-black tracking-wider text-red-400 block uppercase leading-tight">
+                            DPS
+                          </span>
+                          <span className="text-xs font-bold text-white truncate block leading-tight mt-0.5">
+                            {reg.rankDps}
+                          </span>
                         </div>
                       </div>
 
-                      <div className="rounded-lg border border-white/5 bg-black/30 p-2">
-                        <span className="text-[10px] font-bold text-emerald-400 block">SUPPORT</span>
-                        <div className="mt-1 flex flex-col items-center justify-center">
+                      {/* SUPPORT */}
+                      <div className="flex items-center gap-2.5 rounded-xl border border-emerald-500/20 bg-emerald-500/[0.04] p-2.5">
+                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-black/50 p-1">
                           {getRankImage(reg.rankSupport) ? (
                             <img
                               src={getRankImage(reg.rankSupport)}
                               alt={reg.rankSupport}
-                              className="h-6 w-6 object-contain"
+                              className="h-full w-full object-contain drop-shadow-[0_2px_8px_rgba(16,185,129,0.45)]"
                             />
                           ) : (
-                            <span className="text-[10px] text-white/40">Unranked</span>
+                            <span className="text-[9px] text-white/30">N/A</span>
                           )}
-                          <span className="text-[10px] text-white/80 font-medium">{reg.rankSupport}</span>
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <span className="text-[10px] font-black tracking-wider text-emerald-400 block uppercase leading-tight">
+                            SUPPORT
+                          </span>
+                          <span className="text-xs font-bold text-white truncate block leading-tight mt-0.5">
+                            {reg.rankSupport}
+                          </span>
                         </div>
                       </div>
                     </div>
+
                   </div>
 
                   {/* Archivos / Capturas en R2 */}
