@@ -77,6 +77,7 @@ export function RegistrationsEditor() {
           id: row.id,
           tournamentId: row.tournament_id || "tourney-4",
           tournamentName: row.tournament_name || "Overplay Tourney 4",
+          email: row.email || "",
           isCaptain: !!row.is_captain,
           battleNetId: row.battlenet_id || "",
           discordId: row.discord_id || "",
@@ -172,6 +173,7 @@ export function RegistrationsEditor() {
       "Capitán",
       "BattleNet ID",
       "Discord ID",
+      "Email",
       "Rol Preferido",
       "Rango Tanque",
       "Rango DPS",
@@ -188,6 +190,7 @@ export function RegistrationsEditor() {
       r.isCaptain ? "SÍ" : "NO",
       `"${r.battleNetId}"`,
       `"${r.discordId}"`,
+      `"${r.email || ""}"`,
       r.preferredRole,
       r.rankTank,
       r.rankDps,
@@ -219,6 +222,7 @@ export function RegistrationsEditor() {
       r.draftName.toLowerCase().includes(q) ||
       r.battleNetId.toLowerCase().includes(q) ||
       r.discordId.toLowerCase().includes(q) ||
+      r.email?.toLowerCase().includes(q) ||
       r.favoriteHero.toLowerCase().includes(q) ||
       r.preferredRole.toLowerCase().includes(q) ||
       r.rankTank.toLowerCase().includes(q) ||
@@ -267,6 +271,7 @@ CREATE TABLE IF NOT EXISTS public.tournament_registrations (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tournament_id TEXT NOT NULL DEFAULT 'tourney-4',
   tournament_name TEXT NOT NULL DEFAULT 'Overplay Tourney 4',
+  email TEXT NOT NULL DEFAULT '',
   is_captain BOOLEAN NOT NULL DEFAULT false,
   battlenet_id TEXT NOT NULL,
   discord_id TEXT NOT NULL,
@@ -282,6 +287,9 @@ CREATE TABLE IF NOT EXISTS public.tournament_registrations (
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Si la tabla ya existe y necesitas agregar la columna email:
+ALTER TABLE public.tournament_registrations ADD COLUMN IF NOT EXISTS email TEXT DEFAULT '';
 
 -- 2. Habilitar RLS (Row Level Security) y Políticas de Acceso
 ALTER TABLE public.tournament_registrations ENABLE ROW LEVEL SECURITY;
@@ -636,6 +644,29 @@ ON public.tournament_registrations FOR DELETE USING (true);
                         </button>
                       </div>
                     </div>
+
+                    {reg.email && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-white/40">Email:</span>
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-sans text-[11px] text-white/90 truncate max-w-[150px] sm:max-w-[170px]" title={reg.email}>
+                            {reg.email}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleCopy(reg.email, `email-${reg.id}`)}
+                            className="text-white/40 hover:text-white"
+                            title="Copiar Correo"
+                          >
+                            {copiedId === `email-${reg.id}` ? (
+                              <Check className="h-3.5 w-3.5 text-emerald-400" />
+                            ) : (
+                              <Copy className="h-3.5 w-3.5" />
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   {/* Rol y Rangos */}

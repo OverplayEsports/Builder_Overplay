@@ -37,6 +37,7 @@ export interface TournamentRegistrationData {
   id: string;
   tournamentId: string;
   tournamentName: string;
+  email: string;
   isCaptain: boolean;
   battleNetId: string;
   discordId: string;
