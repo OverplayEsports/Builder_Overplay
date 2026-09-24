@@ -158,7 +158,8 @@ export type BuilderSectionKey =
   | "hero"
   | "ticker"
   | "cta"
-  | "registrations";
+  | "registrations"
+  | "email-template";
 
 export type UserRole = "superadmin" | "editor";
 export type UserStatus = "pending" | "approved" | "rejected";
@@ -216,8 +217,10 @@ export type BuilderTab =
   | "ticker"
   | "cta"
   | "registrations"
+  | "email-template"
   | "users"
   | "code";
+
 
 
 export interface BuilderState {

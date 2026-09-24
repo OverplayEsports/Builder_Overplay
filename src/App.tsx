@@ -11,6 +11,7 @@ import { HeroEditor } from "./components/builder/HeroEditor";
 import { TickerEditor } from "./components/builder/TickerEditor";
 import { CtaEditor } from "./components/builder/CtaEditor";
 import { RegistrationsEditor } from "./components/builder/RegistrationsEditor";
+import { EmailTemplateEditor } from "./components/builder/EmailTemplateEditor";
 import { UsersManagementEditor } from "./components/builder/UsersManagementEditor";
 import { AuthGate } from "./components/auth/AuthGate";
 import { SetUsernameModal } from "./components/auth/SetUsernameModal";
@@ -62,6 +63,7 @@ function MainBuilderContent() {
         {activeTab === "ticker" && hasPermission("ticker") && <TickerEditor />}
         {activeTab === "cta" && hasPermission("cta") && <CtaEditor />}
         {activeTab === "registrations" && hasPermission("registrations") && <RegistrationsEditor />}
+        {activeTab === "email-template" && hasPermission("email-template") && <EmailTemplateEditor />}
         {activeTab === "users" && isSuperAdmin && <UsersManagementEditor />}
       </main>
     </div>

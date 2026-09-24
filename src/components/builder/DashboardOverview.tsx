@@ -14,6 +14,7 @@ import {
   Lock,
   ShieldCheck,
   Clock,
+  Mail,
 } from "lucide-react";
 import { useBuilder } from "../../context/BuilderContext";
 import { Button } from "../ui/Button";
@@ -148,6 +149,19 @@ export function DashboardOverview({
       onAction: () => setActiveTab("registrations"),
       color: "from-amber-500/20 to-orange-500/10",
       accentBorder: "border-amber-500/40",
+      highlight: true,
+    },
+    {
+      id: "email-template",
+      title: "Plantilla de Correo",
+      tag: "EmailJS & Gmail",
+      icon: Mail,
+      status: "Comprobante Oficial",
+      description: "Editor y previsualizador en vivo del correo que reciben los jugadores y el staff con medallas de rangos.",
+      actionLabel: "Abrir Editor Email",
+      onAction: () => setActiveTab("email-template"),
+      color: "from-rose-500/20 to-amber-500/10",
+      accentBorder: "border-rose-500/40",
       highlight: true,
     },
     {
