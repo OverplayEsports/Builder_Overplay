@@ -195,6 +195,7 @@ interface BuilderContextType {
   approveUser: (userId: string, allowedSections: BuilderSectionKey[]) => Promise<void>;
   rejectUser: (userId: string) => Promise<void>;
   updateUserPermissions: (userId: string, allowedSections: BuilderSectionKey[]) => Promise<void>;
+  updateUserRole: (userId: string, role: UserRole) => Promise<void>;
   deleteUser: (userId: string) => Promise<void>;
   syncUsersWithSupabase: () => Promise<void>;
   hasPermission: (section: BuilderSectionKey) => boolean;
@@ -559,6 +560,25 @@ export function BuilderProvider({ children }: { children: ReactNode }) {
         return {
           ...u,
           allowedSections,
+          updatedAt: new Date().toISOString(),
+        };
+      }
+      return u;
+    });
+
+    setUsersList(nextList);
+    await saveUsersToRemote(nextList);
+  };
+
+  const updateUserRole = async (userId: string, role: UserRole) => {
+    const nextList = usersList.map((u) => {
+      if (u.id === userId) {
+        return {
+          ...u,
+          role,
+          ...(role === "superadmin"
+            ? { allowedSections: BUILDER_SECTIONS_LIST.map((s) => s.id) }
+            : {}),
           updatedAt: new Date().toISOString(),
         };
       }
@@ -1742,6 +1762,7 @@ Escribe aquí el cuerpo del artículo con toda la información relevante.
         approveUser,
         rejectUser,
         updateUserPermissions,
+        updateUserRole,
         deleteUser,
         syncUsersWithSupabase,
         hasPermission,

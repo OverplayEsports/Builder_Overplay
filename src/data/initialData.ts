@@ -700,6 +700,12 @@ export const BUILDER_SECTIONS_LIST: {
     description: "Visualización de participantes, rangos, perfiles de carrera en R2 y aprobación.",
     tag: "Inscripciones",
   },
+  {
+    id: "email-template",
+    title: "Plantilla de Correo",
+    description: "Personalización y vista previa de correos de confirmación.",
+    tag: "Email",
+  },
 ];
 
 export const SUPER_ADMIN_EMAIL = "pamacheyt@gmail.com";
@@ -722,6 +728,7 @@ export const INITIAL_BUILDER_USERS: BuilderUser[] = [
       "ticker",
       "cta",
       "registrations",
+      "email-template",
     ],
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),

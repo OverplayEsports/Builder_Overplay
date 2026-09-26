@@ -18,6 +18,7 @@ import {
   Code2,
   Copy,
   User,
+  Crown,
 } from "lucide-react";
 import { useBuilder } from "../../context/BuilderContext";
 import { Button } from "../ui/Button";
@@ -30,6 +31,7 @@ export function UsersManagementEditor() {
     approveUser,
     rejectUser,
     updateUserPermissions,
+    updateUserRole,
     deleteUser,
     syncUsersWithSupabase,
     isSuperAdmin,
@@ -55,6 +57,23 @@ export function UsersManagementEditor() {
     } finally {
       setIsSyncing(false);
     }
+  };
+
+  const handleToggleSuperAdmin = async (user: BuilderUser, targetRole: "superadmin" | "editor") => {
+    if (targetRole === "superadmin") {
+      const confirmMsg = `¿Estás seguro de convertir a "${user.username || user.email}" en Superadministrador?\n\nTendrá acceso total a todas las secciones del Builder y podrá gestionar usuarios.`;
+      if (!window.confirm(confirmMsg)) return;
+
+      await updateUserRole(user.id, "superadmin");
+      setSuccessNotice(`👑 ¡${user.username || user.email} ahora es Superadministrador!`);
+    } else {
+      const confirmMsg = `¿Estás seguro de revocar el rol de Superadministrador a "${user.username || user.email}" y dejarlo como Colaborador/Editor?`;
+      if (!window.confirm(confirmMsg)) return;
+
+      await updateUserRole(user.id, "editor");
+      setSuccessNotice(`Rol cambiado a Colaborador para ${user.username || user.email}`);
+    }
+    setTimeout(() => setSuccessNotice(null), 3500);
   };
 
   const openApproveOrEdit = (user: BuilderUser) => {
@@ -138,7 +157,7 @@ VALUES (
   'Pamache',
   'superadmin',
   'approved',
-  '["about", "events", "competitive", "news", "allies", "hero", "ticker", "cta", "registrations"]'::jsonb,
+  '["about", "events", "competitive", "news", "allies", "hero", "ticker", "cta", "registrations", "email-template"]'::jsonb,
   NOW(),
   NOW(),
   NOW()
@@ -147,7 +166,7 @@ ON CONFLICT (email) DO UPDATE
 SET role = 'superadmin',
     status = 'approved',
     username = 'Pamache',
-    allowed_sections = '["about", "events", "competitive", "news", "allies", "hero", "ticker", "cta", "registrations"]'::jsonb,
+    allowed_sections = '["about", "events", "competitive", "news", "allies", "hero", "ticker", "cta", "registrations", "email-template"]'::jsonb,
     updated_at = NOW();
 `;
 
@@ -306,24 +325,32 @@ SET role = 'superadmin',
 
           <div className="space-y-3">
             {approvedUsers.map((user) => {
-              const isSuper = (user.email || "").toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase();
+              const isPrimaryOwner = (user.email || "").toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase();
+              const isSuper = isPrimaryOwner || user.role === "superadmin";
+
               return (
                 <div
                   key={user.id}
-                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-2xl border border-white/10 bg-white/[0.02] p-5 transition-all hover:border-white/20"
+                  className={`flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-2xl border p-5 transition-all ${
+                    isSuper
+                      ? "border-orange-500/30 bg-gradient-to-r from-orange-500/[0.05] via-amber-500/[0.02] to-transparent shadow-lg shadow-orange-500/5"
+                      : "border-white/10 bg-white/[0.02] hover:border-white/20"
+                  }`}
                 >
                   <div className="flex-1 min-w-0">
                     <div className="flex flex-wrap items-center gap-2.5">
                       <span className="font-bold text-base text-white">
                         {user.username || "(Sin nombre asignado aún)"}
                       </span>
-                      <span className="text-xs text-white/50">({user.email})</span>
+                      <span className="text-xs text-white/50 font-mono">({user.email})</span>
                       {isSuper ? (
-                        <span className="rounded-md border border-orange-500/40 bg-orange-500/20 px-2.5 py-0.5 text-[10px] font-bold text-orange-300 uppercase tracking-wider">
+                        <span className="inline-flex items-center gap-1.5 rounded-md border border-orange-500/40 bg-orange-500/20 px-2.5 py-0.5 text-[10px] font-black text-orange-300 uppercase tracking-wider shadow-sm">
+                          <Crown className="h-3.5 w-3.5 text-amber-400 animate-pulse" />
                           Superadministrador
                         </span>
                       ) : (
-                        <span className="rounded-md border border-emerald-400/30 bg-emerald-400/10 px-2.5 py-0.5 text-[10px] font-semibold text-emerald-300 uppercase tracking-wider">
+                        <span className="inline-flex items-center gap-1 rounded-md border border-emerald-400/30 bg-emerald-400/10 px-2.5 py-0.5 text-[10px] font-semibold text-emerald-300 uppercase tracking-wider">
+                          <User className="h-3 w-3 text-emerald-400" />
                           Colaborador
                         </span>
                       )}
@@ -337,7 +364,7 @@ SET role = 'superadmin',
                       </span>
                       {isSuper ? (
                         <span className="rounded-md border border-orange-500/30 bg-orange-500/10 px-2 py-0.5 font-display text-[9px] font-bold uppercase text-orange-200">
-                          Todas las Casillas (Acceso Total)
+                          Todas las Casillas (Acceso Total de Superadmin)
                         </span>
                       ) : user.allowedSections && Array.isArray(user.allowedSections) && user.allowedSections.length > 0 ? (
                         user.allowedSections.map((secKey) => {
@@ -359,8 +386,34 @@ SET role = 'superadmin',
                     </div>
                   </div>
 
-                  {!isSuper && (
-                    <div className="flex items-center gap-2 shrink-0 border-t sm:border-t-0 border-white/10 pt-3 sm:pt-0">
+                  {/* Acciones para el usuario */}
+                  <div className="flex flex-wrap items-center gap-2 shrink-0 border-t sm:border-t-0 border-white/10 pt-3 sm:pt-0">
+                    {/* Botón Convertir en Superadministrador / Degradar a Editor */}
+                    {!isPrimaryOwner && (
+                      isSuper ? (
+                        <button
+                          type="button"
+                          onClick={() => handleToggleSuperAdmin(user, "editor")}
+                          className="flex items-center gap-1.5 rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 py-1.5 text-xs font-bold text-amber-300 hover:bg-amber-500/20 hover:text-white transition-all cursor-pointer active:scale-95"
+                          title="Revocar rol de Superadministrador y dejar como Editor"
+                        >
+                          <ShieldCheck className="h-3.5 w-3.5" />
+                          <span>Degradar a Editor</span>
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => handleToggleSuperAdmin(user, "superadmin")}
+                          className="flex items-center gap-1.5 rounded-xl border border-orange-500/50 bg-gradient-to-r from-orange-500/20 via-amber-500/20 to-orange-500/20 px-3 py-1.5 text-xs font-black uppercase tracking-wider text-orange-200 hover:border-orange-400 hover:from-orange-500/30 hover:to-amber-500/30 hover:text-white transition-all cursor-pointer active:scale-95 shadow-lg shadow-orange-500/10"
+                          title="Convertir a este usuario en Superadministrador con acceso total"
+                        >
+                          <Crown className="h-3.5 w-3.5 text-amber-400" />
+                          <span>Hacer Superadmin</span>
+                        </button>
+                      )
+                    )}
+
+                    {!isSuper && (
                       <Button
                         size="sm"
                         variant="secondary"
@@ -370,7 +423,9 @@ SET role = 'superadmin',
                         <Edit3 className="h-3.5 w-3.5 text-orange-400" />
                         <span>Editar Casillas</span>
                       </Button>
+                    )}
 
+                    {!isPrimaryOwner && (
                       <button
                         onClick={() => deleteUser(user.id)}
                         title="Eliminar usuario"
@@ -378,8 +433,8 @@ SET role = 'superadmin',
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
               );
             })}
