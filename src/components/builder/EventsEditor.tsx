@@ -150,8 +150,10 @@ export function EventsEditor() {
   const [rulesImageUploadSuccess, setRulesImageUploadSuccess] = useState(false);
   const [isSavingRules, setIsSavingRules] = useState(false);
   const [saveRulesSuccess, setSaveRulesSuccess] = useState(false);
+  const [isSavingEventDetails, setIsSavingEventDetails] = useState(false);
+  const [saveEventDetailsSuccess, setSaveEventDetailsSuccess] = useState(false);
 
-  // Cargar configuración de reglas desde Supabase al iniciar
+  // Cargar configuración de reglas y datos del evento desde Supabase al iniciar
   useEffect(() => {
     supabase
       .from("team_groups")
@@ -170,7 +172,84 @@ export function EventsEditor() {
           }
         }
       });
+
+    supabase
+      .from("team_groups")
+      .select("*")
+      .eq("id", "config_event_details")
+      .maybeSingle()
+      .then(({ data, error }) => {
+        if (!error && data?.description && currentEvent) {
+          try {
+            const parsed = typeof data.description === "string" ? JSON.parse(data.description) : data.description;
+            if (parsed && typeof parsed === "object") {
+              updateEvent(currentEvent.id, {
+                statusBadge: parsed.statusBadge || currentEvent.statusBadge,
+                titlePrefix: parsed.titlePrefix || currentEvent.titlePrefix,
+                titleMain: parsed.titleMain || currentEvent.titleMain,
+                edition: parsed.edition || currentEvent.edition,
+                description: parsed.description || currentEvent.description,
+                bannerImage: parsed.bannerImage || currentEvent.bannerImage,
+                chips: Array.isArray(parsed.chips) && parsed.chips.length > 0 ? parsed.chips : currentEvent.chips,
+                registerButton: {
+                  text: parsed.registerButtonText || currentEvent.registerButton?.text || "Inscribirse",
+                  url: parsed.registerButtonUrl || currentEvent.registerButton?.url || "#inscripcion",
+                },
+                rulesButton: {
+                  text: parsed.rulesButtonText || currentEvent.rulesButton?.text || "Ver reglas",
+                  url: parsed.rulesButtonUrl || currentEvent.rulesButton?.url || "#/reglas",
+                },
+                infoItems: Array.isArray(parsed.infoItems) && parsed.infoItems.length > 0 ? parsed.infoItems : currentEvent.infoItems,
+                processPhases: Array.isArray(parsed.processPhases) && parsed.processPhases.length > 0 ? parsed.processPhases : currentEvent.processPhases,
+              });
+            }
+          } catch (e) {
+            console.warn("Error parsing event details from Supabase:", e);
+          }
+        }
+      });
   }, [currentEvent?.id]);
+
+  const handleSaveEventDetailsToSupabase = async () => {
+    if (!currentEvent) return;
+    setIsSavingEventDetails(true);
+    try {
+      const payload = {
+        id: currentEvent.id,
+        statusBadge: currentEvent.statusBadge,
+        titlePrefix: currentEvent.titlePrefix,
+        titleMain: currentEvent.titleMain,
+        edition: currentEvent.edition,
+        description: currentEvent.description,
+        bannerImage: currentEvent.bannerImage,
+        chips: currentEvent.chips,
+        registerButtonText: currentEvent.registerButton?.text || "Inscribirse",
+        registerButtonUrl: currentEvent.registerButton?.url || "#inscripcion",
+        rulesButtonText: currentEvent.rulesButton?.text || "Ver reglas",
+        rulesButtonUrl: currentEvent.rulesButton?.url || "#/reglas",
+        infoItems: currentEvent.infoItems,
+        processPhases: currentEvent.processPhases,
+      };
+
+      const { error } = await supabase.from("team_groups").upsert({
+        id: "config_event_details",
+        title: `${currentEvent.titlePrefix} ${currentEvent.titleMain} ${currentEvent.edition}`,
+        description: JSON.stringify(payload),
+        accent: "ember",
+        order_index: 998,
+        updated_at: new Date().toISOString(),
+      });
+
+      if (error) throw error;
+      setSaveEventDetailsSuccess(true);
+      setTimeout(() => setSaveEventDetailsSuccess(false), 3500);
+    } catch (err: any) {
+      console.error("Error al guardar detalles del torneo:", err);
+      alert(`Error al guardar en Supabase: ${err?.message || "Verifica tu conexión."}`);
+    } finally {
+      setIsSavingEventDetails(false);
+    }
+  };
 
   // Convierte un DataURL base64 a File para subir a R2 si quedó en memoria
   const dataURLtoFile = (dataurl: string, filename: string): File => {
@@ -413,7 +492,32 @@ export function EventsEditor() {
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          <Button
+            variant="default"
+            size="sm"
+            onClick={handleSaveEventDetailsToSupabase}
+            disabled={isSavingEventDetails}
+            className="bg-gradient-to-r from-orange-500 to-rose-600 font-bold shadow-lg"
+          >
+            {isSavingEventDetails ? (
+              <>
+                <Sparkles className="h-4 w-4 animate-spin" />
+                Guardando en Supabase...
+              </>
+            ) : saveEventDetailsSuccess ? (
+              <>
+                <Check className="h-4 w-4 text-emerald-300" />
+                ¡Torneo Guardado en Supabase!
+              </>
+            ) : (
+              <>
+                <Trophy className="h-4 w-4" />
+                Guardar Torneo en Supabase
+              </>
+            )}
+          </Button>
+
           <Button
             variant="outline"
             size="sm"

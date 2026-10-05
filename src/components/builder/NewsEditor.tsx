@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import {
   Plus,
@@ -38,6 +38,7 @@ import { useBuilder } from "../../context/BuilderContext";
 import type { NewsArticle, NewsCategory } from "../../types/builder";
 import { Button } from "../ui/Button";
 import { cn } from "../../utils/cn";
+import { supabase } from "../../lib/supabase";
 
 const CATEGORY_OPTIONS: { id: NewsCategory; label: string; chip: string }[] = [
   {
@@ -81,8 +82,37 @@ export function NewsEditor() {
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [isSyncingWp, setIsSyncingWp] = useState(false);
+  const [isSavingToSupabase, setIsSavingToSupabase] = useState(false);
+  const [saveNewsSuccess, setSaveNewsSuccess] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [uploadSuccess, setUploadSuccess] = useState<string | null>(null);
+
+  // Cargar configuración de noticias desde Supabase al iniciar
+  useEffect(() => {
+    supabase
+      .from("team_groups")
+      .select("*")
+      .eq("id", "config_news")
+      .maybeSingle()
+      .then(({ data, error }) => {
+        if (!error && data?.description) {
+          try {
+            const parsed = typeof data.description === "string" ? JSON.parse(data.description) : data.description;
+            if (parsed && typeof parsed === "object") {
+              if (Array.isArray(parsed.news) && parsed.news.length > 0) {
+                setNewsList(parsed.news);
+              }
+              if (parsed.wordpressUrl && typeof parsed.wordpressUrl === "string") {
+                setWpUrlInput(parsed.wordpressUrl);
+                updateWordpressUrl(parsed.wordpressUrl);
+              }
+            }
+          } catch (e) {
+            console.warn("Error parsing news config from Supabase:", e);
+          }
+        }
+      });
+  }, []);
 
   // WordPress URL local form state
   const [wpUrlInput, setWpUrlInput] = useState(
@@ -551,6 +581,41 @@ Escribe aquí los párrafos explicativos con la información completa.
     }
   };
 
+  const handleSaveNewsToSupabase = async () => {
+    setIsSavingToSupabase(true);
+    setUploadError(null);
+    setUploadSuccess(null);
+    try {
+      const payload = {
+        wordpressUrl: (wpUrlInput || state.wordpressUrl || "").trim().replace(/\/+$/, ""),
+        news: state.news || [],
+        updatedAt: new Date().toISOString(),
+      };
+
+      const { error } = await supabase.from("team_groups").upsert({
+        id: "config_news",
+        title: "Configuración de Noticias",
+        description: JSON.stringify(payload),
+        accent: "ember",
+        order_index: 997,
+        updated_at: new Date().toISOString(),
+      });
+
+      if (error) throw error;
+      setSaveNewsSuccess(true);
+      setUploadSuccess("¡Noticias y configuración de WordPress guardadas en Supabase con éxito!");
+      setTimeout(() => {
+        setSaveNewsSuccess(false);
+        setUploadSuccess(null);
+      }, 4000);
+    } catch (err: any) {
+      console.error("Error al guardar noticias en Supabase:", err);
+      setUploadError(err?.message || "Error al sincronizar con Supabase");
+    } finally {
+      setIsSavingToSupabase(false);
+    }
+  };
+
   return (
     <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6">
       {/* Top Banner */}
@@ -566,12 +631,35 @@ Escribe aquí los párrafos explicativos con la información completa.
               Integración WordPress & Cloudflare CDN
             </h1>
             <p className="mt-2 text-xs leading-relaxed text-white/60 sm:text-sm max-w-2xl">
-              Las noticias se consumen directamente desde la API REST de WordPress. Estructura: Imagen de cabecera, Título, Subtítulo y Texto enriquecido con imágenes.
+              Las noticias se sincronizan con Supabase y se consumen desde la API REST de WordPress. Estructura: Imagen de cabecera, Título, Subtítulo y Texto enriquecido.
             </p>
           </div>
 
           {/* Action Buttons */}
           <div className="flex flex-wrap items-center gap-3">
+            <button
+              onClick={handleSaveNewsToSupabase}
+              disabled={isSavingToSupabase}
+              className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-orange-500 to-rose-600 px-4 py-2 text-xs font-bold text-white shadow-lg transition-all cursor-pointer hover:opacity-90 disabled:opacity-50"
+            >
+              {isSavingToSupabase ? (
+                <>
+                  <Sparkles className="h-4 w-4 animate-spin" />
+                  <span>Guardando...</span>
+                </>
+              ) : saveNewsSuccess ? (
+                <>
+                  <Check className="h-4 w-4 text-emerald-200" />
+                  <span>¡Guardado en Supabase!</span>
+                </>
+              ) : (
+                <>
+                  <CloudUpload className="h-4 w-4" />
+                  <span>Guardar en Supabase</span>
+                </>
+              )}
+            </button>
+
             <button
               onClick={() => setShowWordpressModal(true)}
               className={cn(
