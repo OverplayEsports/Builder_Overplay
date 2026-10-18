@@ -751,6 +751,10 @@ export const DEFAULT_HERO_CONFIG: HeroConfig = {
   playersCount: "+300",
   communityCount: "+1.2K",
   backgroundImage: "/images/hero-bg.jpg",
+  clipVideoUrl: "",
+  clipTitle: "Highlight Reel",
+  clipSubtitle: "Las mejores jugadas de la comunidad",
+  clipBadge: "Clip Oficial",
 };
 
 export const DEFAULT_TICKER_CONFIG: TickerConfig = {

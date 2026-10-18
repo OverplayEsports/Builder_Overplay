@@ -190,6 +190,10 @@ export interface HeroConfig {
   playersCount: string;
   communityCount: string;
   backgroundImage?: string;
+  clipVideoUrl?: string;
+  clipTitle?: string;
+  clipSubtitle?: string;
+  clipBadge?: string;
 }
 
 export interface TickerConfig {

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Flame,
   Sparkles,
@@ -12,6 +12,9 @@ import {
   Eye,
   Sliders,
   Swords,
+  Video,
+  Play,
+  Film,
   Link as LinkIcon,
 } from "lucide-react";
 import { useBuilder } from "../../context/BuilderContext";
@@ -31,8 +34,30 @@ export function HeroEditor() {
   const [syncSuccess, setSyncSuccess] = useState(false);
   const [syncError, setSyncError] = useState<string | null>(null);
   const [isUploadingBg, setIsUploadingBg] = useState(false);
+  const [isUploadingClip, setIsUploadingClip] = useState(false);
   const [showSqlModal, setShowSqlModal] = useState(false);
   const [copiedSql, setCopiedSql] = useState(false);
+
+  // Cargar configuración de Hero desde Supabase al entrar
+  useEffect(() => {
+    supabase
+      .from("team_groups")
+      .select("description")
+      .eq("id", "config_hero")
+      .maybeSingle()
+      .then(({ data, error }) => {
+        if (!error && data?.description) {
+          try {
+            const parsed = JSON.parse(data.description);
+            if (parsed && parsed.hero) {
+              setHeroConfig((prev) => ({ ...prev, ...parsed.hero }));
+            }
+          } catch (e) {
+            console.warn("Error parsing hero config from supabase:", e);
+          }
+        }
+      });
+  }, []);
 
   // Subida directa de Fondo a Cloudflare R2
   const uploadBgToR2 = async (file: File): Promise<string> => {
@@ -79,6 +104,51 @@ export function HeroEditor() {
     return `${publicUrl.replace(/\/+$/, "")}/${fileKey}`;
   };
 
+  // Subida directa de Video Clip a Cloudflare R2
+  const uploadClipToR2 = async (file: File): Promise<string> => {
+    const accountId =
+      state.cloudflareConfig?.accountId?.trim() || "a7d64e57350dbbddcc2b65f7d8ede3a0";
+    const bucketName =
+      state.cloudflareConfig?.bucketName?.trim() || "imagenesoverplay";
+    const accessKeyId =
+      state.cloudflareConfig?.accessKeyId?.trim() || "cbce2ec53f08bc186b64d463df8325f0";
+    const secretAccessKey =
+      state.cloudflareConfig?.secretAccessKey?.trim() ||
+      "aaf8802d017d1da21588dc44e4bb886e5ed1cfddad234900faa874fe1ff0e780";
+    const publicUrl =
+      state.cloudflareConfig?.publicUrl?.trim() ||
+      "https://pub-def6d9ceb4ef4e8f84ee8a391d2b0b27.r2.dev";
+
+    const cleanBaseName = file.name
+      .replace(/\.[^/.]+$/, "")
+      .replace(/[^a-zA-Z0-9_-]/g, "-")
+      .toLowerCase();
+    const ext = (file.name.split(".").pop() || "mp4").toLowerCase();
+    const fileKey = `clips/${Date.now()}-${cleanBaseName}.${ext}`;
+
+    const s3Client = new S3Client({
+      region: "auto",
+      endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
+      credentials: {
+        accessKeyId,
+        secretAccessKey,
+      },
+    });
+
+    const fileBytes = new Uint8Array(await file.arrayBuffer());
+
+    const uploadCmd = new PutObjectCommand({
+      Bucket: bucketName,
+      Key: fileKey,
+      Body: fileBytes,
+      ContentType: file.type || "video/mp4",
+      ContentLength: fileBytes.byteLength,
+    });
+
+    await s3Client.send(uploadCmd);
+    return `${publicUrl.replace(/\/+$/, "")}/${fileKey}`;
+  };
+
   const handleBgUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -93,6 +163,24 @@ export function HeroEditor() {
       setSyncError(`Error al subir imagen a R2: ${err.message || "Verifica credenciales"}`);
     } finally {
       setIsUploadingBg(false);
+      if (e.target) e.target.value = "";
+    }
+  };
+
+  const handleClipUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsUploadingClip(true);
+    setSyncError(null);
+
+    try {
+      const publicUrl = await uploadClipToR2(file);
+      setHeroConfig((prev) => ({ ...prev, clipVideoUrl: publicUrl }));
+    } catch (err: any) {
+      console.error("Error al subir clip a R2:", err);
+      setSyncError(`Error al subir video a R2: ${err.message || "Verifica credenciales"}`);
+    } finally {
+      setIsUploadingClip(false);
       if (e.target) e.target.value = "";
     }
   };
@@ -313,6 +401,49 @@ ON CONFLICT (id) DO UPDATE SET
                   </span>
                 </div>
               </div>
+
+              {/* Clip Video Preview */}
+              <div className="mt-8 border-t border-white/10 pt-5">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="font-display text-xs font-bold uppercase tracking-wider text-orange-400 flex items-center gap-1.5">
+                    <Film className="h-3.5 w-3.5" />
+                    Vista Previa: Clip R2
+                  </span>
+                  <span className="rounded bg-white/10 px-2 py-0.5 text-[10px] text-white/60">
+                    {heroConfig.clipBadge || "Clip Oficial"}
+                  </span>
+                </div>
+                <div className="relative aspect-video w-full overflow-hidden rounded-xl border border-white/15 bg-black/90 shadow-inner">
+                  {heroConfig.clipVideoUrl ? (
+                    <video
+                      key={heroConfig.clipVideoUrl}
+                      src={heroConfig.clipVideoUrl}
+                      autoPlay
+                      loop
+                      muted
+                      playsInline
+                      controls
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-full w-full flex-col items-center justify-center p-4 text-center">
+                      <Video className="h-8 w-8 text-white/30 mb-2" />
+                      <p className="text-xs text-white/60 font-semibold">Sin clip asignado</p>
+                      <p className="text-[10px] text-white/40 max-w-xs mt-1">
+                        Sube un archivo .mp4 o pega una URL de Cloudflare R2 en el formulario
+                      </p>
+                    </div>
+                  )}
+                </div>
+                <div className="mt-2 flex items-center justify-between text-xs">
+                  <span className="font-bold text-white truncate max-w-[200px]">
+                    {heroConfig.clipTitle || "Highlight Reel"}
+                  </span>
+                  <span className="text-[11px] text-white/50 truncate max-w-[180px]">
+                    {heroConfig.clipSubtitle || "Las mejores jugadas"}
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -529,6 +660,89 @@ ON CONFLICT (id) DO UPDATE SET
                     className="hidden"
                   />
                 </label>
+              </div>
+            </div>
+
+            {/* Recuadro de Clip de Video (Cloudflare R2) */}
+            <div className="border-t border-white/10 pt-4 space-y-3">
+              <div className="flex items-center gap-2">
+                <Video className="h-4 w-4 text-orange-400" />
+                <h3 className="font-display text-xs font-bold uppercase tracking-wider text-white">
+                  Clip de Video en Portada (Cloudflare R2)
+                </h3>
+              </div>
+
+              <div>
+                <label className="block font-display text-[10px] font-bold uppercase tracking-wider text-white/70 mb-1">
+                  URL del Video (MP4 / WebM desde R2)
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={heroConfig.clipVideoUrl || ""}
+                    onChange={(e) =>
+                      setHeroConfig((prev) => ({ ...prev, clipVideoUrl: e.target.value }))
+                    }
+                    className="flex-1 rounded-xl border border-white/15 bg-white/[0.04] px-3 py-2 text-xs text-white focus:border-orange-500 focus:outline-none font-mono"
+                    placeholder="https://pub-def6d9ceb4ef4e8f84ee8a391d2b0b27.r2.dev/clips/..."
+                  />
+                  <label className="flex items-center gap-1.5 rounded-xl border border-orange-500/30 bg-orange-500/10 px-3 py-2 text-xs font-semibold text-orange-300 hover:bg-orange-500/20 cursor-pointer">
+                    <Upload className={`h-4 w-4 ${isUploadingClip ? "animate-bounce" : ""}`} />
+                    <span>{isUploadingClip ? "Subiendo Video..." : "Subir Video R2"}</span>
+                    <input
+                      type="file"
+                      accept="video/mp4,video/webm,video/ogg"
+                      onChange={handleClipUpload}
+                      disabled={isUploadingClip}
+                      className="hidden"
+                    />
+                  </label>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <label className="block font-display text-[9px] font-bold uppercase tracking-wider text-white/70 mb-1">
+                    Badge / Etiqueta
+                  </label>
+                  <input
+                    type="text"
+                    value={heroConfig.clipBadge || ""}
+                    onChange={(e) =>
+                      setHeroConfig((prev) => ({ ...prev, clipBadge: e.target.value }))
+                    }
+                    className="w-full rounded-xl border border-white/15 bg-white/[0.04] px-3 py-2 text-xs text-white focus:border-orange-500 focus:outline-none"
+                    placeholder="Clip Oficial"
+                  />
+                </div>
+                <div>
+                  <label className="block font-display text-[9px] font-bold uppercase tracking-wider text-white/70 mb-1">
+                    Título del Clip
+                  </label>
+                  <input
+                    type="text"
+                    value={heroConfig.clipTitle || ""}
+                    onChange={(e) =>
+                      setHeroConfig((prev) => ({ ...prev, clipTitle: e.target.value }))
+                    }
+                    className="w-full rounded-xl border border-white/15 bg-white/[0.04] px-3 py-2 text-xs text-white focus:border-orange-500 focus:outline-none"
+                    placeholder="Highlight Reel"
+                  />
+                </div>
+                <div>
+                  <label className="block font-display text-[9px] font-bold uppercase tracking-wider text-white/70 mb-1">
+                    Subtítulo / Jugada
+                  </label>
+                  <input
+                    type="text"
+                    value={heroConfig.clipSubtitle || ""}
+                    onChange={(e) =>
+                      setHeroConfig((prev) => ({ ...prev, clipSubtitle: e.target.value }))
+                    }
+                    className="w-full rounded-xl border border-white/15 bg-white/[0.04] px-3 py-2 text-xs text-white focus:border-orange-500 focus:outline-none"
+                    placeholder="Mejores jugadas"
+                  />
+                </div>
               </div>
             </div>
           </div>
