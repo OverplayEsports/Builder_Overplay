@@ -635,6 +635,7 @@ export function BuilderProvider({ children }: { children: ReactNode }) {
         id: `member-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
         name: memberData?.name || "Nuevo Integrante",
         role: memberData?.role || "Staff / Rol",
+        description: memberData?.description || "",
         avatarType: memberData?.avatarType || "monogram",
         avatarImage: memberData?.avatarImage,
         gradient: memberData?.gradient || randomGradient,
@@ -1325,6 +1326,7 @@ Escribe aquí el cuerpo del artículo con toda la información relevante.
         return {
           name: m.name,
           role: m.role,
+          ...(m.description ? { description: m.description } : {}),
           gradient: m.gradient,
           ...(m.avatarType === "image" && m.avatarImage
             ? { image: m.avatarImage }
@@ -1334,7 +1336,7 @@ Escribe aquí el cuerpo del artículo con toda la información relevante.
       }),
     }));
 
-    return `/** Equipo humano detrás de Overplay: staff, arte y moderación. */\nimport type { SocialPlatform } from "./site";\n\nexport interface TeamMember {\n  name: string;\n  role: string;\n  image?: string;\n  socials?: Partial<Record<SocialPlatform, string>>;\n  gradient: string;\n}\n\nexport interface TeamGroup {\n  id: string;\n  title: string;\n  description: string;\n  accent: "ember" | "violet" | "crimson" | "emerald";\n  members: TeamMember[];\n}\n\nexport const TEAM_GROUPS: TeamGroup[] = ${JSON.stringify(
+    return `/** Equipo humano detrás de Overplay: staff, arte y moderación. */\nimport type { SocialPlatform } from "./site";\n\nexport interface TeamMember {\n  name: string;\n  role: string;\n  description?: string;\n  image?: string;\n  socials?: Partial<Record<SocialPlatform, string>>;\n  gradient: string;\n}\n\nexport interface TeamGroup {\n  id: string;\n  title: string;\n  description: string;\n  accent: "ember" | "violet" | "crimson" | "emerald";\n  members: TeamMember[];\n}\n\nexport const TEAM_GROUPS: TeamGroup[] = ${JSON.stringify(
       cleanGroups,
       null,
       2

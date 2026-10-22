@@ -228,6 +228,7 @@ export function AboutEditor() {
           group_id: g.id,
           name: m.name,
           role: m.role,
+          description: m.description || "",
           avatar_type: m.avatarType || "monogram",
           avatar_image: m.avatarImage || "",
           gradient: m.gradient || "from-orange-500 to-rose-600",
@@ -291,6 +292,7 @@ export function AboutEditor() {
             id: m.id,
             name: m.name,
             role: m.role,
+            description: m.description || "",
             avatarType: m.avatar_type || "monogram",
             avatarImage: m.avatar_image || "",
             gradient: m.gradient || "from-orange-500 to-rose-600",
@@ -539,16 +541,22 @@ export function AboutEditor() {
             )}
           </div>
 
-          {/* Cards Grid — Exact Same Size (6 columns uniform) */}
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6">
+          {/* Cards Grid — 3 columnas horizontales */}
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
             {currentGroup.members.map((member, index) => {
+              // Filtrar solo las redes sociales activas con URL
+              const activeSocials = SOCIAL_LIST.filter((platform) => {
+                const setting = member.socials?.[platform];
+                return setting?.enabled === true && typeof setting?.url === "string" && setting.url.trim().length > 0 && setting.url !== "#";
+              });
+
               return (
                 <div
                   key={member.id}
-                  className="card-surface group relative flex h-full flex-col items-center gap-3 overflow-hidden rounded-2xl border border-white/10 p-4 text-center transition-all duration-300 hover:border-orange-400/40 hover:shadow-[0_12px_40px_-16px_rgba(249,115,22,0.3)]"
+                  className="card-surface group relative flex h-full flex-row items-stretch overflow-hidden rounded-2xl border border-white/10 p-4 transition-all duration-300 hover:border-orange-400/40 hover:shadow-[0_12px_40px_-16px_rgba(249,115,22,0.3)]"
                 >
                   {/* Top action quick tools */}
-                  <div className="absolute right-2 top-2 flex items-center gap-1 opacity-0 transition-opacity duration-200 group-hover:opacity-100 z-20 bg-[#07070a]/90 rounded-lg p-1 border border-white/10">
+                  <div className="absolute right-2 top-2 flex items-center gap-1 opacity-0 transition-opacity duration-200 group-hover:opacity-100 z-20 bg-[#07070a]/95 rounded-lg p-1 border border-white/15 backdrop-blur-sm shadow-lg">
                     <button
                       onClick={() =>
                         moveMember(currentGroup.id, member.id, "left")
@@ -589,10 +597,10 @@ export function AboutEditor() {
                     </button>
                   </div>
 
-                  {/* Avatar */}
+                  {/* 1. Lado Izquierdo: Imagen / Avatar */}
                   <div
                     onClick={() => handleOpenEdit(currentGroup.id, member)}
-                    className="cursor-pointer transition-transform duration-300 group-hover:scale-105 mt-2"
+                    className="shrink-0 flex items-start pt-0.5 cursor-pointer transition-transform duration-300 group-hover:scale-105"
                   >
                     <MonogramAvatar
                       name={member.name}
@@ -603,55 +611,66 @@ export function AboutEditor() {
                     />
                   </div>
 
-                  {/* Name & Role */}
-                  <div className="w-full">
-                    <h4 className="font-display text-base font-bold uppercase italic tracking-wide text-white truncate">
-                      {member.name}
-                    </h4>
-                    <p className="mt-0.5 text-xs text-white/50 truncate">
-                      {member.role}
-                    </p>
-                  </div>
-
-                  {/* 5 Social Media Icons in 1 single line with live click */}
-                  <div className="mt-auto flex w-full flex-nowrap items-center justify-center gap-1.5 border-t border-white/[0.07] pt-3">
-                    {SOCIAL_LIST.map((platform) => {
-                      const setting = member.socials?.[platform];
-                      const isEnabled = setting?.enabled ?? false;
-                      const url = setting?.url || "#";
-
-                      if (!isEnabled) {
-                        return (
-                          <span
-                            key={platform}
-                            title={`${SOCIAL_META[platform].name} (Desactivado)`}
-                            className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-white/5 bg-white/[0.01] text-white/15 opacity-40"
-                          >
-                            <span className="text-[9px]">✕</span>
-                          </span>
-                        );
-                      }
-
-                      return (
-                        <SocialButton
-                          key={platform}
-                          platform={platform}
-                          href={url}
-                          label={`${member.name} en ${SOCIAL_META[platform].name}`}
-                          className="h-6.5 w-6.5 sm:h-7 sm:w-7 shrink-0 rounded-full border-white/10 bg-white/[0.03] text-white/50 hover:border-orange-400/60 hover:bg-orange-500/15 hover:text-white"
-                          iconClassName="h-3 w-3 sm:h-3.5 sm:w-3.5"
-                        />
-                      );
-                    })}
-                  </div>
-
-                  {/* Quick Edit Button */}
-                  <button
+                  {/* 2. Centro: Nombre al costado derecho de la imagen arriba, rol y descripción */}
+                  <div
                     onClick={() => handleOpenEdit(currentGroup.id, member)}
-                    className="w-full mt-2 rounded-lg border border-white/10 bg-white/[0.02] py-1 font-display text-[10px] font-bold uppercase tracking-wider text-white/40 hover:bg-white/[0.06] hover:text-white transition-colors cursor-pointer"
+                    className="flex-1 min-w-0 px-3.5 flex flex-col justify-center text-left cursor-pointer"
                   >
-                    Editar Casilla
-                  </button>
+                    <h4 className="font-display text-base font-bold uppercase italic tracking-wide text-white truncate">
+                      {member.name || "Sin nombre"}
+                    </h4>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-orange-400/90 truncate">
+                      {member.role || "Staff"}
+                    </p>
+                    {member.description ? (
+                      <p className="mt-1.5 text-xs leading-relaxed text-white/55 line-clamp-2">
+                        {member.description}
+                      </p>
+                    ) : (
+                      <p className="mt-1.5 text-[11px] italic text-white/25">
+                        Sin descripción
+                      </p>
+                    )}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleOpenEdit(currentGroup.id, member);
+                      }}
+                      className="mt-2.5 inline-flex w-fit items-center gap-1 rounded-md border border-white/10 bg-white/[0.03] px-2 py-0.5 text-[10px] font-semibold text-white/50 hover:bg-white/10 hover:text-white transition-colors"
+                    >
+                      <Edit3 className="h-2.5 w-2.5 text-orange-400" />
+                      Editar Casilla
+                    </button>
+                  </div>
+
+                  {/* 3. Lado Derecho: Redes sociales en columna vertical (solo las activas) */}
+                  <div className="shrink-0 flex flex-col items-center justify-center gap-1.5 pl-2.5 border-l border-white/[0.08]">
+                    {activeSocials.length > 0 ? (
+                      activeSocials.map((platform) => {
+                        const setting = member.socials?.[platform];
+                        const url = setting?.url || "#";
+                        return (
+                          <SocialButton
+                            key={platform}
+                            platform={platform}
+                            href={url}
+                            label={`${member.name} en ${SOCIAL_META[platform].name}`}
+                            className="h-6.5 w-6.5 shrink-0 rounded-full border-white/10 bg-white/[0.03] text-white/50 hover:border-orange-400/60 hover:bg-orange-500/15 hover:text-white"
+                            iconClassName="h-3 w-3"
+                          />
+                        );
+                      })
+                    ) : (
+                      <span
+                        title="Sin redes activadas - Clic en Editar Casilla"
+                        onClick={() => handleOpenEdit(currentGroup.id, member)}
+                        className="cursor-pointer text-[10px] text-white/20 hover:text-orange-400 py-1"
+                      >
+                        <LinkIcon className="h-3.5 w-3.5 opacity-30" />
+                      </span>
+                    )}
+                  </div>
                 </div>
               );
             })}
@@ -664,16 +683,16 @@ export function AboutEditor() {
                   role: "Staff",
                 })
               }
-              className="group flex min-h-[220px] flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-white/15 bg-white/[0.01] p-6 text-center transition-all duration-300 hover:border-orange-400/40 hover:bg-orange-500/[0.04] cursor-pointer"
+              className="group flex min-h-[100px] flex-row items-center justify-center gap-3 rounded-2xl border border-dashed border-white/15 bg-white/[0.01] p-4 text-left transition-all duration-300 hover:border-orange-400/40 hover:bg-orange-500/[0.04] cursor-pointer"
             >
-              <span className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-white/40 transition-transform duration-300 group-hover:scale-110 group-hover:border-orange-400/40 group-hover:text-orange-300">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-white/40 transition-transform duration-300 group-hover:scale-110 group-hover:border-orange-400/40 group-hover:text-orange-300">
                 <Plus className="h-5 w-5" />
               </span>
               <div>
                 <p className="font-display text-xs font-bold uppercase tracking-wider text-white/60 group-hover:text-white">
                   Agregar Integrante
                 </p>
-                <p className="mt-1 text-[11px] text-white/30">
+                <p className="mt-0.5 text-[11px] text-white/30">
                   Nuevo miembro a {currentGroup.title}
                 </p>
               </div>
@@ -766,6 +785,27 @@ export function AboutEditor() {
                       }
                       placeholder="Ej. Dirección, Operaciones, Staff..."
                       className="w-full rounded-xl border border-white/15 bg-black/50 px-3.5 py-2 text-sm text-white focus:border-orange-500 focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-white/60 mb-1">
+                      Descripción / Biografía
+                    </label>
+                    <textarea
+                      rows={2}
+                      value={editingMember.member.description || ""}
+                      onChange={(e) =>
+                        setEditingMember({
+                          ...editingMember,
+                          member: {
+                            ...editingMember.member,
+                            description: e.target.value,
+                          },
+                        })
+                      }
+                      placeholder="Breve reseña o funciones dentro del equipo..."
+                      className="w-full rounded-xl border border-white/15 bg-black/50 px-3.5 py-2 text-xs text-white placeholder:text-white/30 focus:border-orange-500 focus:outline-none resize-none"
                     />
                   </div>
                 </div>
