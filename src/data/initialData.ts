@@ -399,6 +399,8 @@ export const INITIAL_COMPETITIVE_ROSTER: CompetitivePlayer[] = [
       discord: { enabled: false, url: "#" },
     },
     gradient: "from-orange-500 to-rose-600",
+    description: "Líder de la línea frontal y estratega del equipo. Especialista en control de espacio y tempo en peleas de mapa.",
+    topHeroes: ["Reinhardt", "Winston", "Sigma"],
   },
   {
     id: "player-2",
@@ -416,6 +418,8 @@ export const INITIAL_COMPETITIVE_ROSTER: CompetitivePlayer[] = [
       discord: { enabled: false, url: "#" },
     },
     gradient: "from-rose-500 to-red-600",
+    description: "Puntería de alta precisión a larga distancia. Encargado de los duelos de rango y primeros picks del mapa.",
+    topHeroes: ["Cassidy", "Ashe", "Widowmaker"],
   },
   {
     id: "player-3",
@@ -433,6 +437,8 @@ export const INITIAL_COMPETITIVE_ROSTER: CompetitivePlayer[] = [
       discord: { enabled: false, url: "#" },
     },
     gradient: "from-violet-500 to-fuchsia-600",
+    description: "Movilidad constante y presión en flancos. Especialista en composiciones agresivas de buceo y teamfights rápidas.",
+    topHeroes: ["Tracer", "Genji", "Echo"],
   },
   {
     id: "player-4",
@@ -450,6 +456,8 @@ export const INITIAL_COMPETITIVE_ROSTER: CompetitivePlayer[] = [
       discord: { enabled: false, url: "#" },
     },
     gradient: "from-amber-500 to-orange-600",
+    description: "Adaptabilidad extrema a composiciones enemigas. Domina off-tanks defensivos y agresivos con igual soltura.",
+    topHeroes: ["D.va", "Zarya", "Doomfist"],
   },
   {
     id: "player-5",
@@ -467,6 +475,8 @@ export const INITIAL_COMPETITIVE_ROSTER: CompetitivePlayer[] = [
       discord: { enabled: false, url: "#" },
     },
     gradient: "from-fuchsia-500 to-purple-600",
+    description: "Coordinación de rotaciones de equipo y curación sostenida en momentos de máxima presión durante torneos oficiales.",
+    topHeroes: ["Lucio", "Brigitte", "Mercy"],
   },
   {
     id: "player-6",
@@ -484,6 +494,8 @@ export const INITIAL_COMPETITIVE_ROSTER: CompetitivePlayer[] = [
       discord: { enabled: false, url: "#" },
     },
     gradient: "from-red-500 to-rose-600",
+    description: "Gran capacidad mecánica en disparos críticos de soporte y habilidades decisivas que cambian el rumbo de partidas.",
+    topHeroes: ["Ana", "Kiriko", "Baptiste"],
   },
   {
     id: "player-7",
@@ -501,6 +513,8 @@ export const INITIAL_COMPETITIVE_ROSTER: CompetitivePlayer[] = [
       discord: { enabled: false, url: "#" },
     },
     gradient: "from-orange-600 to-red-600",
+    description: "Impacto inmediato desde el banquillo, dominando selecciones flexibles para desconcertar al rival.",
+    topHeroes: ["Sojourn", "Pharah", "Soldado76"],
   },
   {
     id: "player-8",
@@ -518,6 +532,8 @@ export const INITIAL_COMPETITIVE_ROSTER: CompetitivePlayer[] = [
       discord: { enabled: false, url: "#" },
     },
     gradient: "from-purple-500 to-violet-600",
+    description: "Poder de choque en puntos de captura y mapas de control. Especialista en disrupción caótica.",
+    topHeroes: ["Mauga", "JunkerQueen", "WreckingBall"],
   },
   {
     id: "player-9",
@@ -535,6 +551,8 @@ export const INITIAL_COMPETITIVE_ROSTER: CompetitivePlayer[] = [
       discord: { enabled: false, url: "#" },
     },
     gradient: "from-rose-600 to-violet-600",
+    description: "Análisis de macro-juego, scouting de oponentes y preparación táctica integral para cada serie competitiva.",
+    topHeroes: ["Reinhardt", "Ana", "Lucio"],
   },
 ];
 

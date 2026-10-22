@@ -127,6 +127,8 @@ export interface CompetitivePlayer {
   gradient: string;
   events: string[];
   socials: Record<SocialPlatform, SocialLinkSetting>;
+  description?: string;
+  topHeroes?: string[];
 }
 
 export interface CompetitiveEvent {

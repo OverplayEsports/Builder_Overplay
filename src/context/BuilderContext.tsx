@@ -1360,6 +1360,8 @@ Escribe aquí el cuerpo del artículo con toda la información relevante.
         gradient: playerData?.gradient || randomGradient,
         events: playerData?.events || ["Tourney 3", "Clash Cup"],
         socials: playerData?.socials || { ...DEFAULT_MEMBER_SOCIALS },
+        description: playerData?.description || "",
+        topHeroes: playerData?.topHeroes || [],
       };
       return {
         ...prev,
@@ -1528,6 +1530,8 @@ Escribe aquí el cuerpo del artículo con toda la información relevante.
         ...(p.avatarType === "image" && p.avatarImage
           ? { image: p.avatarImage }
           : {}),
+        ...(p.description ? { description: p.description } : {}),
+        ...(p.topHeroes && p.topHeroes.length > 0 ? { topHeroes: p.topHeroes } : {}),
       };
     });
 
@@ -1539,7 +1543,7 @@ Escribe aquí el cuerpo del artículo con toda la información relevante.
       blurb: e.blurb,
     }));
 
-    return `/** Roster oficial de UL — división competitiva de Overplay — e historial de eventos. */\nimport type { SocialPlatform } from "./site";\n\nexport interface Player {\n  tag: string;\n  name: string;\n  role: string;\n  position: string;\n  events: string[];\n  socials: Partial<Record<SocialPlatform, string>>;\n  gradient: string;\n  image?: string;\n}\n\nexport const ROSTER: Player[] = ${JSON.stringify(
+    return `/** Roster oficial de UL — división competitiva de Overplay — e historial de eventos. */\nimport type { SocialPlatform } from "./site";\n\nexport interface Player {\n  tag: string;\n  name: string;\n  role: string;\n  position: string;\n  events: string[];\n  socials: Partial<Record<SocialPlatform, string>>;\n  gradient: string;\n  description?: string;\n  topHeroes?: string[];\n  image?: string;\n}\n\nexport const ROSTER: Player[] = ${JSON.stringify(
       cleanRoster,
       null,
       2
