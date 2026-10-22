@@ -31,7 +31,11 @@ import {
 } from "lucide-react";
 import { useBuilder } from "../../context/BuilderContext";
 import { GRADIENT_PRESETS } from "../../data/initialData";
-import { OVERWATCH_HEROES } from "../../data/overwatchHeroes";
+import {
+  OVERWATCH_HEROES,
+  getHeroImageUrl,
+  getLocalHeroImageUrl,
+} from "../../data/overwatchHeroes";
 import { supabase } from "../../lib/supabase";
 import type {
   CompetitiveEvent,
@@ -696,8 +700,15 @@ CREATE POLICY IF NOT EXISTS "Escritura competitive_players" ON public.competitiv
                                 className="group/hero relative h-9 w-9 sm:h-10 sm:w-10 shrink-0 overflow-hidden rounded-xl border border-white/20 bg-black/70 p-0.5 shadow-md ring-1 ring-white/10 transition-transform hover:scale-110"
                               >
                                 <img
-                                  src={`/images/Overwatch/${hero}.png`}
+                                  src={getHeroImageUrl(hero)}
                                   alt={hero}
+                                  onError={(e) => {
+                                    const target = e.currentTarget;
+                                    if (!target.dataset.triedFallback) {
+                                      target.dataset.triedFallback = "true";
+                                      target.src = getLocalHeroImageUrl(hero);
+                                    }
+                                  }}
                                   className="h-full w-full rounded-lg object-cover"
                                   loading="lazy"
                                 />
@@ -1121,8 +1132,15 @@ CREATE POLICY IF NOT EXISTS "Escritura competitive_players" ON public.competitiv
                           {heroName ? (
                             <>
                               <img
-                                src={heroData?.image || `/images/Overwatch/${heroName}.png`}
+                                src={heroData?.image || getHeroImageUrl(heroName)}
                                 alt={heroName}
+                                onError={(e) => {
+                                  const target = e.currentTarget;
+                                  if (!target.dataset.triedFallback) {
+                                    target.dataset.triedFallback = "true";
+                                    target.src = getLocalHeroImageUrl(heroName);
+                                  }
+                                }}
                                 className="h-12 w-12 rounded-lg object-cover shadow-md border border-white/20 group-hover:scale-105 transition-transform"
                               />
                               <span className="mt-1.5 text-xs font-bold text-white truncate max-w-full text-center">
@@ -1743,6 +1761,13 @@ CREATE POLICY IF NOT EXISTS "Escritura competitive_players" ON public.competitiv
                         <img
                           src={hero.image}
                           alt={hero.name}
+                          onError={(e) => {
+                            const target = e.currentTarget;
+                            if (!target.dataset.triedFallback) {
+                              target.dataset.triedFallback = "true";
+                              target.src = getLocalHeroImageUrl(hero.name);
+                            }
+                          }}
                           className="h-full w-full object-cover group-hover:scale-105 transition-transform"
                           loading="lazy"
                         />
