@@ -223,19 +223,24 @@ export function AboutEditor() {
 
       // 2. Guardar o actualizar miembros
       const membersToUpsert = state.teamGroups.flatMap((g) =>
-        g.members.map((m, mIndex) => ({
-          id: m.id,
-          group_id: g.id,
-          name: m.name,
-          role: m.role,
-          description: m.description || "",
-          avatar_type: m.avatarType || "monogram",
-          avatar_image: m.avatarImage || "",
-          gradient: m.gradient || "from-orange-500 to-rose-600",
-          socials: m.socials || {},
-          order_index: mIndex,
-          updated_at: new Date().toISOString(),
-        }))
+        g.members.map((m, mIndex) => {
+          const socialsData = {
+            ...(m.socials || {}),
+            _description: m.description || "",
+          };
+          return {
+            id: m.id,
+            group_id: g.id,
+            name: m.name,
+            role: m.role,
+            avatar_type: m.avatarType || "monogram",
+            avatar_image: m.avatarImage || "",
+            gradient: m.gradient || "from-orange-500 to-rose-600",
+            socials: socialsData,
+            order_index: mIndex,
+            updated_at: new Date().toISOString(),
+          };
+        })
       );
 
       if (membersToUpsert.length > 0) {
@@ -292,7 +297,7 @@ export function AboutEditor() {
             id: m.id,
             name: m.name,
             role: m.role,
-            description: m.description || "",
+            description: m.description || m.socials?._description || "",
             avatarType: m.avatar_type || "monogram",
             avatarImage: m.avatar_image || "",
             gradient: m.gradient || "from-orange-500 to-rose-600",
