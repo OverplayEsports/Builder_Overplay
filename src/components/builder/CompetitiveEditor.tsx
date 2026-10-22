@@ -609,14 +609,14 @@ CREATE POLICY IF NOT EXISTS "Escritura competitive_players" ON public.competitiv
                   </div>
 
                   {/* 1. Bloque Horizontal Principal (Estilo Web) */}
-                  <div className="relative min-h-[135px] overflow-hidden">
-                    {/* Fondo del lado izquierdo: Imagen usando el alto total y degradado hacia la derecha */}
-                    <div className="absolute left-0 top-0 bottom-0 w-36 sm:w-44 overflow-hidden">
+                  <div className="relative flex min-h-[120px] sm:min-h-[130px] items-stretch overflow-hidden">
+                    {/* Fondo del lado izquierdo: Imagen usando el alto total y en proporción 1:1 */}
+                    <div className="relative shrink-0 self-stretch aspect-square overflow-hidden bg-black/40">
                       {player.avatarType === "image" && player.avatarImage ? (
                         <img
                           src={player.avatarImage}
                           alt={player.name}
-                          className="h-full w-full object-cover object-top transition-transform duration-700 group-hover:scale-105"
+                          className="h-full w-full object-cover object-center transition-transform duration-700 group-hover:scale-105"
                         />
                       ) : (
                         <div
@@ -628,9 +628,9 @@ CREATE POLICY IF NOT EXISTS "Escritura competitive_players" ON public.competitiv
                           {player.name ? player.name.slice(0, 2).toUpperCase() : "UL"}
                         </div>
                       )}
-                      {/* Degradado hacia la derecha */}
-                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#0c0c10]/80 to-[#0c0c10]" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-[#0c0c10]/90 via-transparent to-black/30" />
+                      {/* Degradado suave en el borde derecho para fundirse elegantemente */}
+                      <div className="absolute inset-y-0 right-0 w-8 sm:w-12 bg-gradient-to-r from-transparent to-[#0c0c10] pointer-events-none" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#0c0c10]/30 via-transparent to-transparent pointer-events-none" />
 
                       {/* Botón flotante para subir directo a R2 */}
                       <div className="absolute bottom-2 left-2 z-20">
@@ -662,7 +662,7 @@ CREATE POLICY IF NOT EXISTS "Escritura competitive_players" ON public.competitiv
                     </div>
 
                     {/* Textos y contenido a la derecha de la imagen */}
-                    <div className="relative z-10 flex h-full flex-col justify-between pl-36 sm:pl-44 pr-3.5 sm:pr-4 py-3 sm:py-3.5">
+                    <div className="relative z-10 flex flex-1 min-w-0 flex-col justify-between py-3 px-3.5 sm:px-4">
                       <div>
                         {/* Nombre arriba y Tag */}
                         <div className="flex items-start justify-between gap-1.5 pr-20">
