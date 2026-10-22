@@ -553,7 +553,7 @@ export function AboutEditor() {
               return (
                 <div
                   key={member.id}
-                  className="card-surface group relative flex h-full flex-row items-stretch overflow-hidden rounded-2xl border border-white/10 p-4 transition-all duration-300 hover:border-orange-400/40 hover:shadow-[0_12px_40px_-16px_rgba(249,115,22,0.3)]"
+                  className="card-surface group relative flex h-full min-h-[110px] sm:min-h-[120px] flex-row items-stretch overflow-hidden rounded-2xl border border-white/10 p-3 sm:p-3.5 transition-all duration-300 hover:border-orange-400/40 hover:shadow-[0_12px_40px_-16px_rgba(249,115,22,0.3)]"
                 >
                   {/* Top action quick tools */}
                   <div className="absolute right-2 top-2 flex items-center gap-1 opacity-0 transition-opacity duration-200 group-hover:opacity-100 z-20 bg-[#07070a]/95 rounded-lg p-1 border border-white/15 backdrop-blur-sm shadow-lg">
@@ -597,24 +597,25 @@ export function AboutEditor() {
                     </button>
                   </div>
 
-                  {/* 1. Lado Izquierdo: Imagen / Avatar */}
+                  {/* 1. Lado Izquierdo: Imagen / Avatar usando el alto proporcional de la casilla */}
                   <div
                     onClick={() => handleOpenEdit(currentGroup.id, member)}
-                    className="shrink-0 flex items-start pt-0.5 cursor-pointer transition-transform duration-300 group-hover:scale-105"
+                    className="relative shrink-0 self-stretch aspect-square min-w-[84px] sm:min-w-[96px] max-w-[124px] overflow-hidden rounded-xl sm:rounded-2xl ring-1 ring-white/15 bg-white/[0.02] shadow-md group-hover:ring-orange-400/50 transition-all duration-300 cursor-pointer"
                   >
                     <MonogramAvatar
                       name={member.name}
                       gradient={member.gradient}
                       image={member.avatarImage}
                       avatarType={member.avatarType}
-                      size="lg"
+                      size="fill"
+                      className="!h-full !w-full !rounded-xl sm:!rounded-2xl transition-transform duration-500 group-hover:scale-105"
                     />
                   </div>
 
                   {/* 2. Centro: Nombre al costado derecho de la imagen arriba, rol y descripción */}
                   <div
                     onClick={() => handleOpenEdit(currentGroup.id, member)}
-                    className="flex-1 min-w-0 px-3.5 flex flex-col justify-center text-left cursor-pointer"
+                    className="flex-1 min-w-0 px-3 sm:px-3.5 flex flex-col justify-center text-left cursor-pointer"
                   >
                     <h4 className="font-display text-base font-bold uppercase italic tracking-wide text-white truncate">
                       {member.name || "Sin nombre"}
@@ -623,11 +624,11 @@ export function AboutEditor() {
                       {member.role || "Staff"}
                     </p>
                     {member.description ? (
-                      <p className="mt-1.5 text-xs leading-relaxed text-white/55 line-clamp-2">
+                      <p className="mt-1 text-xs leading-relaxed text-white/55 line-clamp-2">
                         {member.description}
                       </p>
                     ) : (
-                      <p className="mt-1.5 text-[11px] italic text-white/25">
+                      <p className="mt-1 text-[11px] italic text-white/25">
                         Sin descripción
                       </p>
                     )}
@@ -637,15 +638,15 @@ export function AboutEditor() {
                         e.stopPropagation();
                         handleOpenEdit(currentGroup.id, member);
                       }}
-                      className="mt-2.5 inline-flex w-fit items-center gap-1 rounded-md border border-white/10 bg-white/[0.03] px-2 py-0.5 text-[10px] font-semibold text-white/50 hover:bg-white/10 hover:text-white transition-colors"
+                      className="mt-2 inline-flex w-fit items-center gap-1 rounded-md border border-white/10 bg-white/[0.03] px-2 py-0.5 text-[10px] font-semibold text-white/50 hover:bg-white/10 hover:text-white transition-colors"
                     >
                       <Edit3 className="h-2.5 w-2.5 text-orange-400" />
                       Editar Casilla
                     </button>
                   </div>
 
-                  {/* 3. Lado Derecho: Redes sociales en columna vertical (solo las activas) */}
-                  <div className="shrink-0 flex flex-col items-center justify-center gap-1.5 pl-2.5 border-l border-white/[0.08]">
+                  {/* 3. Lado Derecho: Redes sociales en columna vertical compacta (solo las activas) */}
+                  <div className="shrink-0 flex flex-col items-center justify-center gap-1 pl-2 sm:pl-2.5 border-l border-white/[0.08] my-auto">
                     {activeSocials.length > 0 ? (
                       activeSocials.map((platform) => {
                         const setting = member.socials?.[platform];
@@ -656,8 +657,8 @@ export function AboutEditor() {
                             platform={platform}
                             href={url}
                             label={`${member.name} en ${SOCIAL_META[platform].name}`}
-                            className="h-6.5 w-6.5 shrink-0 rounded-full border-white/10 bg-white/[0.03] text-white/50 hover:border-orange-400/60 hover:bg-orange-500/15 hover:text-white"
-                            iconClassName="h-3 w-3"
+                            className="h-5.5 w-5.5 sm:h-6 sm:w-6 shrink-0 rounded-full border border-white/10 bg-white/[0.03] text-white/50 hover:border-orange-400/60 hover:bg-orange-500/15 hover:text-white transition-all"
+                            iconClassName="h-2.5 w-2.5 sm:h-3 sm:w-3"
                           />
                         );
                       })
@@ -667,7 +668,7 @@ export function AboutEditor() {
                         onClick={() => handleOpenEdit(currentGroup.id, member)}
                         className="cursor-pointer text-[10px] text-white/20 hover:text-orange-400 py-1"
                       >
-                        <LinkIcon className="h-3.5 w-3.5 opacity-30" />
+                        <LinkIcon className="h-3 w-3 opacity-30" />
                       </span>
                     )}
                   </div>
