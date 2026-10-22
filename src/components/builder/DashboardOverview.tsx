@@ -15,6 +15,7 @@ import {
   ShieldCheck,
   Clock,
   Mail,
+  Video,
 } from "lucide-react";
 import { useBuilder } from "../../context/BuilderContext";
 import { Button } from "../ui/Button";
@@ -122,6 +123,19 @@ export function DashboardOverview({
       actionLabel: "Abrir Editor",
       onAction: () => setActiveTab("hero"),
       color: "from-orange-500/20 to-red-500/10",
+      accentBorder: "border-orange-500/40",
+      highlight: true,
+    },
+    {
+      id: "home-clips",
+      title: "Clips del Home",
+      tag: "Cloudflare R2",
+      icon: Video,
+      status: "Visualizador & MP4 en R2",
+      description: "Gestor del reproductor de clips del Home: subida de videos MP4 a Cloudflare R2 y título inferior.",
+      actionLabel: "Abrir Clips",
+      onAction: () => setActiveTab("home-clips"),
+      color: "from-orange-500/20 to-purple-500/10",
       accentBorder: "border-orange-500/40",
       highlight: true,
     },

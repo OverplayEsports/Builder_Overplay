@@ -564,12 +564,6 @@ CREATE POLICY IF NOT EXISTS "Escritura competitive_players" ON public.competitiv
                   key={player.id}
                   className="card-surface group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-white/10 bg-[#0c0c10] transition-all duration-300 hover:border-orange-400/40 hover:shadow-[0_20px_50px_-20px_rgba(249,115,22,0.35)]"
                 >
-                  {/* Glowing background */}
-                  <span
-                    aria-hidden
-                    className="absolute -right-20 -top-20 h-48 w-48 rounded-full bg-orange-500/10 blur-3xl opacity-0 transition-opacity duration-700 group-hover:opacity-100 pointer-events-none"
-                  />
-
                   {/* Top Bar with Reorder and Actions */}
                   <div className="absolute right-3 top-3 flex items-center gap-1 opacity-0 transition-opacity duration-200 group-hover:opacity-100 z-30 bg-[#07070a]/90 backdrop-blur-md rounded-lg p-1 border border-white/10">
                     <button
@@ -609,9 +603,15 @@ CREATE POLICY IF NOT EXISTS "Escritura competitive_players" ON public.competitiv
                   </div>
 
                   {/* 1. Bloque Horizontal Principal (Estilo Web) */}
-                  <div className="relative min-h-[125px] sm:min-h-[135px] overflow-hidden">
+                  <div className="relative min-h-[135px] sm:min-h-[145px] overflow-hidden">
                     {/* Fondo del lado izquierdo: Imagen usando el alto total y degradado hacia la derecha */}
-                    <div className="absolute left-0 top-0 bottom-0 w-28 sm:w-36 overflow-hidden">
+                    <div
+                      className="absolute left-0 top-0 bottom-0 w-32 sm:w-40 overflow-hidden"
+                      style={{
+                        maskImage: "linear-gradient(to right, black 50%, transparent 95%)",
+                        WebkitMaskImage: "linear-gradient(to right, black 50%, transparent 95%)",
+                      }}
+                    >
                       {player.avatarType === "image" && player.avatarImage ? (
                         <img
                           src={player.avatarImage}
@@ -628,9 +628,8 @@ CREATE POLICY IF NOT EXISTS "Escritura competitive_players" ON public.competitiv
                           {player.name ? player.name.slice(0, 2).toUpperCase() : "UL"}
                         </div>
                       )}
-                      {/* Degradado hacia la derecha */}
-                      <div className="absolute inset-0 bg-gradient-to-r from-transparent 60% to-[#0c0c10]" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-[#0c0c10]/50 via-transparent to-black/20" />
+                      {/* Degradado sobre la imagen en la parte derecha para fundirse con la casilla */}
+                      <div className="absolute inset-y-0 right-0 w-16 bg-gradient-to-r from-transparent to-[#0c0c10] pointer-events-none" />
 
                       {/* Botón flotante para subir directo a R2 */}
                       <div className="absolute bottom-2 left-2 z-20">
@@ -689,17 +688,17 @@ CREATE POLICY IF NOT EXISTS "Escritura competitive_players" ON public.competitiv
                       {/* Abajo: Los 3 héroes más usados en una línea horizontal + Botón Desplegar */}
                       <div className="mt-2.5 flex items-center justify-between gap-2">
                         {topHeroes.length > 0 ? (
-                          <div className="flex items-center gap-1.5">
+                          <div className="flex items-center gap-1.5 sm:gap-2">
                             {topHeroes.slice(0, 3).map((hero, idx) => (
                               <div
                                 key={idx}
                                 title={hero}
-                                className="group/hero relative h-7 w-7 sm:h-8 sm:w-8 shrink-0 overflow-hidden rounded-lg border border-white/20 bg-black/70 p-0.5 shadow-md ring-1 ring-white/10 transition-transform hover:scale-110"
+                                className="group/hero relative h-9 w-9 sm:h-10 sm:w-10 shrink-0 overflow-hidden rounded-xl border border-white/20 bg-black/70 p-0.5 shadow-md ring-1 ring-white/10 transition-transform hover:scale-110"
                               >
                                 <img
                                   src={`/images/Overwatch/${hero}.png`}
                                   alt={hero}
-                                  className="h-full w-full rounded-md object-cover"
+                                  className="h-full w-full rounded-lg object-cover"
                                   loading="lazy"
                                 />
                               </div>
@@ -920,8 +919,8 @@ CREATE POLICY IF NOT EXISTS "Escritura competitive_players" ON public.competitiv
 
       {/* MODAL 1: EDIT / CREATE PLAYER MODAL */}
       {editingPlayer && (
-        <div className="fixed inset-x-0 top-16 bottom-0 z-40 flex items-center justify-center p-4 sm:p-6 overflow-y-auto bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
-          <div className="card-surface relative my-auto flex max-h-[calc(100vh-6rem)] w-full max-w-2xl flex-col overflow-hidden rounded-3xl border border-white/15 bg-[#0a0a0e] p-6 sm:p-8 shadow-2xl">
+        <div className="fixed inset-x-0 top-16 bottom-0 z-40 flex items-center justify-center p-2 sm:p-4 md:p-6 overflow-y-auto bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
+          <div className="card-surface relative my-auto flex max-h-[calc(100vh-5rem)] w-full max-w-2xl flex-col overflow-hidden rounded-2xl sm:rounded-3xl border border-white/15 bg-[#0a0a0e] p-4 sm:p-6 md:p-8 shadow-2xl">
             {/* Modal Header */}
             <div className="flex shrink-0 items-center justify-between border-b border-white/10 pb-4">
               <div className="flex items-center gap-3">
@@ -1462,8 +1461,8 @@ CREATE POLICY IF NOT EXISTS "Escritura competitive_players" ON public.competitiv
 
       {/* MODAL 2: EDIT / CREATE TOURNAMENT EVENT */}
       {editingEvent && (
-        <div className="fixed inset-x-0 top-16 bottom-0 z-40 flex items-center justify-center p-4 sm:p-6 overflow-y-auto bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
-          <div className="card-surface relative my-auto flex max-h-[calc(100vh-6rem)] w-full max-w-lg flex-col overflow-hidden rounded-3xl border border-white/15 bg-[#0a0a0e] p-6 sm:p-8 shadow-2xl">
+        <div className="fixed inset-x-0 top-16 bottom-0 z-40 flex items-center justify-center p-2 sm:p-4 md:p-6 overflow-y-auto bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
+          <div className="card-surface relative my-auto flex max-h-[calc(100vh-5rem)] w-full max-w-lg flex-col overflow-hidden rounded-2xl sm:rounded-3xl border border-white/15 bg-[#0a0a0e] p-4 sm:p-6 md:p-8 shadow-2xl">
             {/* Header */}
             <div className="flex shrink-0 items-center justify-between border-b border-white/10 pb-4">
               <div className="flex items-center gap-3">
@@ -1603,8 +1602,8 @@ CREATE POLICY IF NOT EXISTS "Escritura competitive_players" ON public.competitiv
 
       {/* MODAL 3: SQL EXPORT MODAL */}
       {showSqlModal && (
-        <div className="fixed inset-x-0 top-16 bottom-0 z-40 flex items-center justify-center p-4 sm:p-6 overflow-y-auto bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
-          <div className="card-surface relative my-auto flex max-h-[calc(100vh-6rem)] w-full max-w-2xl flex-col overflow-hidden rounded-3xl border border-white/15 bg-[#0a0a0e] p-6 sm:p-8 shadow-2xl">
+        <div className="fixed inset-x-0 top-16 bottom-0 z-40 flex items-center justify-center p-2 sm:p-4 md:p-6 overflow-y-auto bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
+          <div className="card-surface relative my-auto flex max-h-[calc(100vh-5rem)] w-full max-w-2xl flex-col overflow-hidden rounded-2xl sm:rounded-3xl border border-white/15 bg-[#0a0a0e] p-4 sm:p-6 md:p-8 shadow-2xl">
             <div className="flex shrink-0 items-center justify-between border-b border-white/10 pb-4">
               <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-500/10 border border-orange-400/30 text-orange-400">
@@ -1672,8 +1671,8 @@ CREATE POLICY IF NOT EXISTS "Escritura competitive_players" ON public.competitiv
       )}
       {/* MODAL 4: HERO PICKER MODAL (OVERWATCH HEROES) */}
       {heroPickerSlot !== null && editingPlayer && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
-          <div className="card-surface relative flex max-h-[85vh] w-full max-w-xl flex-col overflow-hidden rounded-3xl border border-white/20 bg-[#0c0c12] p-5 sm:p-6 shadow-2xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
+          <div className="card-surface relative flex max-h-[88vh] w-full max-w-xl flex-col overflow-hidden rounded-2xl sm:rounded-3xl border border-white/20 bg-[#0c0c12] p-4 sm:p-6 shadow-2xl">
             {/* Header */}
             <div className="flex items-center justify-between border-b border-white/10 pb-4">
               <div className="flex items-center gap-2.5">

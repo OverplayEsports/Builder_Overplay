@@ -903,19 +903,19 @@ Escribe aquí los párrafos explicativos con la información completa.
 
       {/* Full Article Editor Modal */}
       {editingArticle && (
-        <div className="fixed inset-x-0 top-16 bottom-0 z-40 flex items-center justify-center p-4 sm:p-6 overflow-y-auto bg-black/85 backdrop-blur-md">
-          <div className="card-surface relative my-auto flex max-h-[calc(100vh-6rem)] w-full max-w-4xl flex-col overflow-hidden rounded-3xl border border-white/15 bg-[#0e0e12] shadow-2xl">
+        <div className="fixed inset-x-0 top-16 bottom-0 z-40 flex items-center justify-center p-2 sm:p-4 md:p-6 overflow-y-auto bg-black/85 backdrop-blur-md">
+          <div className="card-surface relative my-auto flex max-h-[calc(100vh-5rem)] w-full max-w-4xl flex-col overflow-hidden rounded-2xl sm:rounded-3xl border border-white/15 bg-[#0e0e12] shadow-2xl">
             {/* Modal Header */}
-            <div className="flex shrink-0 items-center justify-between border-b border-white/10 bg-white/[0.02] px-6 py-4">
+            <div className="flex shrink-0 items-center justify-between border-b border-white/10 bg-white/[0.02] px-4 sm:px-6 py-3.5 sm:py-4">
               <div className="flex items-center gap-2">
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-500/10 border border-orange-500/20 text-orange-400">
                   <Edit3 className="h-4 w-4" />
                 </div>
                 <div>
-                  <h2 className="font-display text-base font-bold uppercase tracking-wider text-white">
+                  <h2 className="font-display text-sm sm:text-base font-bold uppercase tracking-wider text-white">
                     Editor de Noticia
                   </h2>
-                  <p className="text-[11px] text-white/50">
+                  <p className="text-[10px] sm:text-[11px] text-white/50">
                     Estructura: Cabecera → Título → Subtítulo → Cuerpo con Cloudflare Images
                   </p>
                 </div>
@@ -925,10 +925,10 @@ Escribe aquí los párrafos explicativos con la información completa.
                 <button
                   type="button"
                   onClick={() => setShowPreviewModal(true)}
-                  className="flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/[0.04] px-3 py-1.5 text-xs font-semibold text-white hover:bg-white/[0.08] cursor-pointer"
+                  className="flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/[0.04] px-2.5 sm:px-3 py-1.5 text-xs font-semibold text-white hover:bg-white/[0.08] cursor-pointer"
                 >
                   <Eye className="h-3.5 w-3.5 text-orange-400" />
-                  <span>Previsualizar</span>
+                  <span className="hidden sm:inline">Previsualizar</span>
                 </button>
                 <button
                   onClick={() => setEditingArticle(null)}
@@ -941,7 +941,7 @@ Escribe aquí los párrafos explicativos con la información completa.
 
             {/* Notification Bar */}
             {uploadSuccess && (
-              <div className="bg-emerald-500/15 border-b border-emerald-500/30 px-6 py-2.5 text-xs text-emerald-300 flex items-center justify-between">
+              <div className="bg-emerald-500/15 border-b border-emerald-500/30 px-4 sm:px-6 py-2.5 text-xs text-emerald-300 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Check className="h-4 w-4 shrink-0" />
                   <span>{uploadSuccess}</span>
@@ -956,7 +956,7 @@ Escribe aquí los párrafos explicativos con la información completa.
             )}
 
             {uploadError && (
-              <div className="bg-rose-500/15 border-b border-rose-500/30 px-6 py-2.5 text-xs text-rose-300 flex items-center justify-between">
+              <div className="bg-rose-500/15 border-b border-rose-500/30 px-4 sm:px-6 py-2.5 text-xs text-rose-300 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <X className="h-4 w-4 shrink-0" />
                   <span>{uploadError}</span>
@@ -971,7 +971,7 @@ Escribe aquí los párrafos explicativos con la información completa.
             )}
 
             {/* Form Content */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-6">
+            <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
               {/* 1. Header Image */}
               <div className="rounded-2xl border border-white/10 bg-black/30 p-4">
                 <label className="block font-display text-xs font-bold uppercase tracking-wider text-orange-400 mb-2">
@@ -1628,10 +1628,10 @@ Escribe aquí los párrafos explicativos con la información completa.
 
       {/* Live Preview Modal */}
       {showPreviewModal && editingArticle && (
-        <div className="fixed inset-x-0 top-16 bottom-0 z-40 flex items-center justify-center p-4 sm:p-6 overflow-y-auto bg-black/90 backdrop-blur-md">
-          <div className="card-surface relative my-auto flex max-h-[calc(100vh-6rem)] w-full max-w-3xl flex-col overflow-hidden rounded-3xl border border-white/15 bg-[#0b0b0e] shadow-2xl">
+        <div className="fixed inset-x-0 top-16 bottom-0 z-40 flex items-center justify-center p-2 sm:p-4 md:p-6 overflow-y-auto bg-black/90 backdrop-blur-md">
+          <div className="card-surface relative my-auto flex max-h-[calc(100vh-5rem)] w-full max-w-3xl flex-col overflow-hidden rounded-2xl sm:rounded-3xl border border-white/15 bg-[#0b0b0e] shadow-2xl">
             {/* Top Bar */}
-            <div className="flex items-center justify-between border-b border-white/10 px-6 py-4">
+            <div className="flex items-center justify-between border-b border-white/10 px-4 sm:px-6 py-3.5 sm:py-4">
               <div className="flex items-center gap-2">
                 <Eye className="h-4 w-4 text-orange-400" />
                 <span className="font-display text-xs font-bold uppercase text-white">
@@ -1647,7 +1647,7 @@ Escribe aquí los párrafos explicativos con la información completa.
             </div>
 
             {/* Rendered Web News Viewer */}
-            <div className="max-h-[75vh] overflow-y-auto p-6 sm:p-8 space-y-6">
+            <div className="max-h-[75vh] overflow-y-auto p-4 sm:p-6 md:p-8 space-y-6">
               {/* Cover */}
               <div className="relative aspect-video w-full overflow-hidden rounded-2xl border border-white/10 bg-black/50">
                 <img

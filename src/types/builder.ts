@@ -159,6 +159,7 @@ export type BuilderSectionKey =
   | "news"
   | "allies"
   | "hero"
+  | "home-clips"
   | "ticker"
   | "cta"
   | "registrations"
@@ -213,6 +214,19 @@ export interface CtaConfig {
   bannerImage?: string;
 }
 
+export interface HomeClipItem {
+  id: string;
+  title: string;
+  url: string;
+  createdAt?: string;
+}
+
+export interface HomeClipsConfig {
+  title: string; // Título que va abajo del player
+  activeClipUrl: string; // URL del video activo en reproducción
+  clips: HomeClipItem[];
+}
+
 export type BuilderTab =
   | "dashboard"
   | "about"
@@ -221,6 +235,7 @@ export type BuilderTab =
   | "news"
   | "allies"
   | "hero"
+  | "home-clips"
   | "ticker"
   | "cta"
   | "registrations"
@@ -243,6 +258,7 @@ export interface BuilderState {
   competitiveEvents?: CompetitiveEvent[];
   allies?: AllyItem[];
   heroConfig?: HeroConfig;
+  homeClipsConfig?: HomeClipsConfig;
   tickerConfig?: TickerConfig;
   ctaConfig?: CtaConfig;
   currentUser?: BuilderUser | null;

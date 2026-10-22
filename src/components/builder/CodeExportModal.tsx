@@ -31,8 +31,8 @@ export function CodeExportModal({ onClose }: { onClose: () => void }) {
   };
 
   return (
-    <div className="fixed inset-x-0 top-16 bottom-0 z-40 flex items-center justify-center p-4 sm:p-6 overflow-y-auto bg-black/85 backdrop-blur-md">
-      <div className="card-surface relative my-auto flex max-h-[calc(100vh-6rem)] w-full max-w-4xl flex-col overflow-hidden rounded-3xl border border-white/15 bg-[#0a0a0e] p-6 sm:p-8 shadow-2xl">
+    <div className="fixed inset-x-0 top-16 bottom-0 z-40 flex items-center justify-center p-2 sm:p-4 md:p-6 overflow-y-auto bg-black/85 backdrop-blur-md">
+      <div className="card-surface relative my-auto flex max-h-[calc(100vh-5rem)] w-full max-w-4xl flex-col overflow-hidden rounded-2xl sm:rounded-3xl border border-white/15 bg-[#0a0a0e] p-4 sm:p-6 md:p-8 shadow-2xl">
         {/* Header */}
         <div className="flex shrink-0 items-center justify-between border-b border-white/10 pb-4">
           <div className="flex items-center gap-3">

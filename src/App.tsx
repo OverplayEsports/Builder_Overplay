@@ -8,6 +8,7 @@ import { CompetitiveEditor } from "./components/builder/CompetitiveEditor";
 import { NewsEditor } from "./components/builder/NewsEditor";
 import { AlliesEditor } from "./components/builder/AlliesEditor";
 import { HeroEditor } from "./components/builder/HeroEditor";
+import { HomeClipsEditor } from "./components/builder/HomeClipsEditor";
 import { TickerEditor } from "./components/builder/TickerEditor";
 import { CtaEditor } from "./components/builder/CtaEditor";
 import { RegistrationsEditor } from "./components/builder/RegistrationsEditor";
@@ -60,6 +61,7 @@ function MainBuilderContent() {
         {activeTab === "news" && hasPermission("news") && <NewsEditor />}
         {activeTab === "allies" && hasPermission("allies") && <AlliesEditor />}
         {activeTab === "hero" && hasPermission("hero") && <HeroEditor />}
+        {activeTab === "home-clips" && hasPermission("home-clips") && <HomeClipsEditor />}
         {activeTab === "ticker" && hasPermission("ticker") && <TickerEditor />}
         {activeTab === "cta" && hasPermission("cta") && <CtaEditor />}
         {activeTab === "registrations" && hasPermission("registrations") && <RegistrationsEditor />}

@@ -375,7 +375,7 @@ ON public.tournament_registrations FOR DELETE USING (true);
       )}
 
       {/* Métricas / Filtros interactivos por estado */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
         {/* TOTAL INSCRITOS */}
         <button
           type="button"
@@ -456,7 +456,7 @@ ON public.tournament_registrations FOR DELETE USING (true);
         <button
           type="button"
           onClick={() => setActiveTabFilter("rejected")}
-          className={`group relative rounded-2xl border p-4 text-center transition-all cursor-pointer ${
+          className={`group relative col-span-2 sm:col-span-1 rounded-2xl border p-4 text-center transition-all cursor-pointer ${
             activeTabFilter === "rejected"
               ? "border-red-400 bg-red-500/20 ring-2 ring-red-500/40 shadow-lg shadow-red-500/15"
               : "border-red-500/20 bg-red-500/5 hover:border-red-500/40 hover:bg-red-500/10"
@@ -887,11 +887,11 @@ ON public.tournament_registrations FOR DELETE USING (true);
       {/* Modal SQL de Supabase */}
       {showSqlModal && (
         <div
-          className="fixed inset-0 z-[120] flex items-center justify-center bg-black/80 p-4 backdrop-blur-md"
+          className="fixed inset-0 z-[120] flex items-center justify-center bg-black/80 p-3 sm:p-4 backdrop-blur-md"
           onClick={() => setShowSqlModal(false)}
         >
           <div
-            className="relative w-full max-w-2xl rounded-2xl border border-white/15 bg-[#0e0e13] p-6 shadow-2xl"
+            className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl border border-white/15 bg-[#0e0e13] p-4 sm:p-6 shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             <button

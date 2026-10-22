@@ -84,7 +84,10 @@ export function AboutEditor() {
   const [editingGroupMeta, setEditingGroupMeta] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Estados de sincronización con Supabase y subida a R2
+  // Cargar automáticamente datos de equipo desde Supabase al montar
+  useEffect(() => {
+    handleLoadFromSupabase();
+  }, []);
   const [isSyncingSupabase, setIsSyncingSupabase] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [syncSuccess, setSyncSuccess] = useState<string | null>(null);
@@ -286,24 +289,26 @@ export function AboutEditor() {
 
       if (mErr) throw mErr;
 
-      const loadedGroups: TeamGroup[] = dbGroups.map((group: any) => ({
-        id: group.id,
-        title: group.title,
-        description: group.description || "",
-        accent: group.accent || "ember",
-        members: (dbMembers || [])
-          .filter((m: any) => m.group_id === group.id)
-          .map((m: any) => ({
-            id: m.id,
-            name: m.name,
-            role: m.role,
-            description: m.description || m.socials?._description || "",
-            avatarType: m.avatar_type || "monogram",
-            avatarImage: m.avatar_image || "",
-            gradient: m.gradient || "from-orange-500 to-rose-600",
-            socials: m.socials || {},
-          })),
-      }));
+      const loadedGroups: TeamGroup[] = dbGroups
+        .filter((group: any) => group && group.id && !String(group.id).startsWith("config_"))
+        .map((group: any) => ({
+          id: group.id,
+          title: group.title,
+          description: group.description || "",
+          accent: group.accent || "ember",
+          members: (dbMembers || [])
+            .filter((m: any) => m.group_id === group.id && typeof m.name === "string" && m.name.trim().length > 0 && m.role !== "8==D")
+            .map((m: any) => ({
+              id: m.id,
+              name: m.name,
+              role: m.role,
+              description: m.description || m.socials?._description || "",
+              avatarType: m.avatar_type || "monogram",
+              avatarImage: m.avatar_image || "",
+              gradient: m.gradient || "from-orange-500 to-rose-600",
+              socials: m.socials || {},
+            })),
+        }));
 
       setTeamGroups(loadedGroups);
       if (loadedGroups[0]) {
@@ -605,7 +610,7 @@ export function AboutEditor() {
                   {/* 1. Lado Izquierdo: Imagen / Avatar usando el alto proporcional de la casilla */}
                   <div
                     onClick={() => handleOpenEdit(currentGroup.id, member)}
-                    className="relative shrink-0 self-stretch aspect-square min-w-[84px] sm:min-w-[96px] max-w-[124px] overflow-hidden rounded-xl sm:rounded-2xl ring-1 ring-white/15 bg-white/[0.02] shadow-md group-hover:ring-orange-400/50 transition-all duration-300 cursor-pointer"
+                    className="relative shrink-0 self-stretch aspect-square min-w-[72px] sm:min-w-[96px] max-w-[124px] overflow-hidden rounded-xl sm:rounded-2xl ring-1 ring-white/15 bg-white/[0.02] shadow-md group-hover:ring-orange-400/50 transition-all duration-300 cursor-pointer"
                   >
                     <MonogramAvatar
                       name={member.name}
@@ -709,8 +714,8 @@ export function AboutEditor() {
 
       {/* Member Edit Modal / Drawer */}
       {editingMember && (
-        <div className="fixed inset-x-0 top-16 bottom-0 z-40 flex items-center justify-center p-4 sm:p-6 overflow-y-auto bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
-          <div className="card-surface relative my-auto flex max-h-[calc(100vh-6rem)] w-full max-w-2xl flex-col overflow-hidden rounded-3xl border border-white/15 bg-[#0a0a0e] p-6 sm:p-8 shadow-2xl">
+        <div className="fixed inset-x-0 top-16 bottom-0 z-40 flex items-center justify-center p-2 sm:p-4 md:p-6 overflow-y-auto bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
+          <div className="card-surface relative my-auto flex max-h-[calc(100vh-5rem)] w-full max-w-2xl flex-col overflow-hidden rounded-2xl sm:rounded-3xl border border-white/15 bg-[#0a0a0e] p-4 sm:p-6 md:p-8 shadow-2xl">
             {/* Modal Header */}
             <div className="flex shrink-0 items-center justify-between border-b border-white/10 pb-4">
               <div className="flex items-center gap-3">

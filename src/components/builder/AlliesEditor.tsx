@@ -369,16 +369,30 @@ ON CONFLICT (id) DO UPDATE SET
             return (
               <article
                 key={ally.id}
-                className="group relative flex h-full flex-col justify-between overflow-hidden rounded-3xl border border-white/[0.08] bg-white/[0.03] p-6 text-center backdrop-blur-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-violet-400/40 hover:bg-white/[0.05] hover:shadow-[0_20px_50px_-20px_rgba(139,92,246,0.4)]"
+                className="isolate group relative flex h-full min-h-[380px] sm:min-h-[420px] flex-col justify-end overflow-hidden rounded-3xl border border-white/[0.08] bg-[#0c0c10] p-6 text-center transition-all duration-300 hover:-translate-y-1.5 hover:border-violet-400/40 hover:shadow-[0_20px_50px_-20px_rgba(139,92,246,0.4)]"
               >
-                {/* Resplandor superior */}
-                <span
-                  aria-hidden
-                  className="absolute -top-20 left-1/2 h-40 w-40 -translate-x-1/2 rounded-full bg-violet-500/15 blur-3xl opacity-0 transition-opacity duration-700 group-hover:opacity-100"
-                />
+                {/* 1. Fondo superior: Imagen degradada hacia abajo a la altura del nombre */}
+                <div className="absolute inset-x-0 top-0 h-[260px] sm:h-[280px] overflow-hidden rounded-t-3xl pointer-events-none">
+                  {ally.avatarType === "image" && ally.avatarImage ? (
+                    <img
+                      src={ally.avatarImage}
+                      alt={ally.name}
+                      className="h-full w-full object-cover object-top transition-transform duration-700 will-change-transform group-hover:scale-105"
+                    />
+                  ) : (
+                    <div
+                      className={cn(
+                        "h-full w-full flex items-center justify-center bg-gradient-to-br opacity-25",
+                        ally.gradient || "from-violet-500 to-fuchsia-600"
+                      )}
+                    />
+                  )}
+                  {/* Degradado hacia abajo a la altura del nombre que se funde con el fondo */}
+                  <div className="absolute inset-0 bg-gradient-to-b from-transparent from-15% via-[#0c0c10]/75 via-60% to-[#0c0c10]" />
+                </div>
 
                 {/* Top Action Tools */}
-                <div className="absolute right-3 top-3 flex items-center gap-1 opacity-0 transition-opacity duration-200 group-hover:opacity-100 z-20 bg-[#07070a]/90 backdrop-blur-md rounded-lg p-1 border border-white/10">
+                <div className="absolute right-3 top-3 flex items-center gap-1 opacity-0 transition-opacity duration-200 group-hover:opacity-100 z-30 bg-[#07070a]/90 backdrop-blur-md rounded-lg p-1 border border-white/10">
                   <button
                     onClick={() => moveAlly(ally.id, "left")}
                     disabled={index === 0}
@@ -415,89 +429,52 @@ ON CONFLICT (id) DO UPDATE SET
                   </button>
                 </div>
 
-                {/* Main Card Content */}
-                <div className="flex flex-col items-center">
-                  {/* Avatar & Direct Upload Trigger */}
-                  <div className="relative mt-2">
-                    <span
-                      aria-hidden
-                      className="absolute -inset-1.5 rounded-full bg-brand-gradient opacity-40 blur-md transition-opacity duration-500 group-hover:opacity-90"
-                    />
-
-                    <div
-                      onClick={() => handleOpenEditAlly(ally, false)}
-                      className="group/avatar relative cursor-pointer transition-transform duration-300 hover:scale-105"
-                      title="Clic para editar foto / monograma"
-                    >
-                      {ally.avatarType === "image" && ally.avatarImage ? (
-                        <div className="relative h-20 w-20 sm:h-24 sm:w-24 overflow-hidden rounded-full border-2 border-violet-500/50 bg-black/60 shadow-lg ring-2 ring-white/10">
-                          <img
-                            src={ally.avatarImage}
-                            alt={ally.name}
-                            className="h-full w-full object-cover"
-                          />
-                        </div>
-                      ) : (
-                        <MonogramAvatar
-                          name={ally.name}
-                          gradient={ally.gradient}
-                          size="lg"
-                          rounded="full"
-                        />
-                      )}
-
-                      <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/60 opacity-0 transition-opacity group-hover/avatar:opacity-100">
-                        <Upload className="h-5 w-5 text-violet-300" />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Direct R2 Upload Button on Card */}
-                  <div className="mt-3 flex items-center gap-2">
-                    <input
-                      ref={(el) => (cardFileInputRefs.current[ally.id] = el)}
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={(e) => handleCardImageUpload(ally.id, e)}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => cardFileInputRefs.current[ally.id]?.click()}
-                      disabled={uploadingAllyId === ally.id}
-                      className="inline-flex items-center gap-1 rounded-lg border border-violet-500/30 bg-violet-500/10 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-violet-300 hover:bg-violet-500/20 cursor-pointer disabled:opacity-50 transition-colors"
-                      title="Subir foto a Cloudflare R2 bucket"
-                    >
-                      {uploadingAllyId === ally.id ? (
-                        <>
-                          <Loader2 className="h-3 w-3 animate-spin text-violet-300" />
-                          <span>Subiendo...</span>
-                        </>
-                      ) : (
-                        <>
-                          <Upload className="h-3 w-3 text-violet-300" />
-                          <span>Subir Foto R2</span>
-                        </>
-                      )}
-                    </button>
-                  </div>
-
-                  {/* Badge & Name & Description */}
-                  <div className="mt-4">
-                    <span className="rounded-full border border-violet-400/25 bg-violet-500/10 px-3 py-1 font-display text-[9px] font-bold uppercase tracking-[0.22em] text-violet-200/90">
-                      {ally.badge}
-                    </span>
-                    <h3 className="mt-3 font-display text-xl font-bold uppercase italic tracking-wide text-white">
-                      {ally.name}
-                    </h3>
-                    <p className="mt-2 text-xs sm:text-sm leading-relaxed text-white/50">
-                      {ally.description}
-                    </p>
-                  </div>
+                {/* Botón flotante para subir directo a R2 */}
+                <div className="absolute top-3 left-3 z-20">
+                  <input
+                    ref={(el) => (cardFileInputRefs.current[ally.id] = el)}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => handleCardImageUpload(ally.id, e)}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => cardFileInputRefs.current[ally.id]?.click()}
+                    disabled={uploadingAllyId === ally.id}
+                    className="inline-flex items-center gap-1 rounded-full border border-white/20 bg-black/60 backdrop-blur-md px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-violet-300 hover:bg-black/90 hover:border-violet-400/50 cursor-pointer disabled:opacity-50 transition-all shadow-md"
+                    title="Subir foto a Cloudflare R2 bucket"
+                  >
+                    {uploadingAllyId === ally.id ? (
+                      <>
+                        <Loader2 className="h-3 w-3 animate-spin text-violet-300" />
+                        <span>Subiendo...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="h-3 w-3 text-violet-300" />
+                        <span>{ally.avatarImage ? "Cambiar R2" : "Subir R2"}</span>
+                      </>
+                    )}
+                  </button>
                 </div>
 
-                {/* Social Buttons & Canal Link Footer */}
-                <div className="relative mt-6 space-y-3 border-t border-white/[0.07] pt-4">
+                {/* Main Card Content (Textos bajados hacia la línea divisoria) */}
+                <div className="relative z-10 flex flex-col items-center mt-auto">
+                  {/* Badge & Name & Description */}
+                  <span className="rounded-full border border-violet-400/25 bg-[#0c0c10]/90 px-3.5 py-1 font-display text-[9px] font-bold uppercase tracking-[0.22em] text-violet-200/90 shadow-sm">
+                    {ally.badge}
+                  </span>
+                  <h3 className="mt-2.5 font-display text-xl sm:text-2xl font-bold uppercase italic tracking-wide text-white drop-shadow-md">
+                    {ally.name}
+                  </h3>
+                  <p className="mt-2 text-xs sm:text-sm leading-relaxed text-white/55 line-clamp-3">
+                    {ally.description}
+                  </p>
+                </div>
+
+                {/* Social Buttons (sin botón de canal) & Editar Casilla */}
+                <div className="relative z-10 mt-5 space-y-3 border-t border-white/[0.08] pt-3.5">
                   <div className="flex items-center justify-center gap-1.5">
                     {SOCIAL_LIST.map((platform) => {
                       const isEnabled = ally.socials?.[platform]?.enabled ?? false;
@@ -530,18 +507,6 @@ ON CONFLICT (id) DO UPDATE SET
                         </button>
                       );
                     })}
-
-                    {ally.link && ally.link !== "#" && (
-                      <a
-                        href={ally.link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex h-7 items-center gap-1 rounded-lg border border-white/10 bg-white/[0.04] px-2.5 font-display text-[9px] font-bold uppercase tracking-[0.16em] text-white/70 hover:border-violet-400/50 hover:bg-violet-500/10 hover:text-white transition-all"
-                      >
-                        <span>Canal</span>
-                        <ArrowUpRight className="h-3 w-3" />
-                      </a>
-                    )}
                   </div>
 
                   <button
@@ -561,8 +526,8 @@ ON CONFLICT (id) DO UPDATE SET
 
       {/* EDIT / CREATE ALLY MODAL */}
       {editingAlly && (
-        <div className="fixed inset-x-0 top-16 bottom-0 z-40 flex items-center justify-center p-4 sm:p-6 overflow-y-auto bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
-          <div className="card-surface relative my-auto flex max-h-[calc(100vh-6rem)] w-full max-w-2xl flex-col overflow-hidden rounded-3xl border border-white/15 bg-[#0a0a0e] p-6 sm:p-8 shadow-2xl">
+        <div className="fixed inset-x-0 top-16 bottom-0 z-40 flex items-center justify-center p-2 sm:p-4 md:p-6 overflow-y-auto bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
+          <div className="card-surface relative my-auto flex max-h-[calc(100vh-5rem)] w-full max-w-2xl flex-col overflow-hidden rounded-2xl sm:rounded-3xl border border-white/15 bg-[#0a0a0e] p-4 sm:p-6 md:p-8 shadow-2xl">
             {/* Modal Header */}
             <div className="flex shrink-0 items-center justify-between border-b border-white/10 pb-4">
               <div className="flex items-center gap-3">

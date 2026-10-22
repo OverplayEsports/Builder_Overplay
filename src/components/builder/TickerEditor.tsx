@@ -308,8 +308,8 @@ ON CONFLICT (id) DO UPDATE SET
 
       {/* SQL Modal */}
       {showSqlModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4 backdrop-blur-md">
-          <div className="relative w-full max-w-2xl overflow-hidden rounded-3xl border border-white/20 bg-[#0e0e14] p-6 shadow-2xl text-white">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-2 sm:p-4 backdrop-blur-md">
+          <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl sm:rounded-3xl border border-white/20 bg-[#0e0e14] p-4 sm:p-6 shadow-2xl text-white">
             <div className="flex items-center justify-between border-b border-white/10 pb-4">
               <h3 className="font-display text-lg font-bold uppercase italic text-white">
                 SQL: Sección Display Deslizante

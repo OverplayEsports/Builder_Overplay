@@ -163,10 +163,10 @@ SET role = 'superadmin',
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-3 sm:p-6 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="relative flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-3xl border border-white/15 bg-[#0a0a0f] shadow-2xl text-white">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-2 sm:p-6 backdrop-blur-md animate-in fade-in duration-200">
+      <div className="relative flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl sm:rounded-3xl border border-white/15 bg-[#0a0a0f] shadow-2xl text-white">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-white/10 px-6 py-5 bg-white/[0.02]">
+        <div className="flex items-center justify-between border-b border-white/10 px-4 sm:px-6 py-4 sm:py-5 bg-white/[0.02]">
           <div className="flex items-center gap-3">
             <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-orange-500/30 bg-orange-500/10 text-orange-400">
               <ShieldCheck className="h-5 w-5" />
@@ -225,7 +225,7 @@ SET role = 'superadmin',
         )}
 
         {/* Content Body */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-8">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-8">
           {/* Section 1: Solicitudes Pendientes */}
           <div>
             <div className="flex items-center justify-between mb-4">
@@ -394,8 +394,8 @@ SET role = 'superadmin',
 
       {/* Sub-modal: Configurar Casillas Independientes */}
       {editingPermissionsUser && (
-        <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/90 p-4 backdrop-blur-md animate-in fade-in duration-150">
-          <div className="relative w-full max-w-xl overflow-hidden rounded-3xl border border-orange-500/40 bg-[#0e0e14] p-6 shadow-2xl text-white">
+        <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/90 p-2 sm:p-4 backdrop-blur-md animate-in fade-in duration-150">
+          <div className="relative w-full max-w-xl max-h-[90vh] overflow-y-auto rounded-2xl sm:rounded-3xl border border-orange-500/40 bg-[#0e0e14] p-4 sm:p-6 shadow-2xl text-white">
             <div className="flex items-center justify-between border-b border-white/10 pb-4">
               <div>
                 <h3 className="font-display text-lg font-bold uppercase italic text-white">

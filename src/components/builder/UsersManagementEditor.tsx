@@ -444,8 +444,8 @@ SET role = 'superadmin',
 
       {/* Sub-modal: Configurar Casillas Independientes */}
       {editingPermissionsUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4 backdrop-blur-md animate-in fade-in duration-150">
-          <div className="relative w-full max-w-xl overflow-hidden rounded-3xl border border-orange-500/40 bg-[#0e0e14] p-6 shadow-2xl text-white">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-3 sm:p-4 backdrop-blur-md animate-in fade-in duration-150">
+          <div className="relative w-full max-w-xl max-h-[90vh] overflow-y-auto rounded-3xl border border-orange-500/40 bg-[#0e0e14] p-4 sm:p-6 shadow-2xl text-white">
             <div className="flex items-center justify-between border-b border-white/10 pb-4">
               <div>
                 <h3 className="font-display text-lg font-bold uppercase italic text-white">

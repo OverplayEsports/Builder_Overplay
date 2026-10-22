@@ -1,4 +1,4 @@
-import type { AllyItem, BuilderSectionKey, BuilderState, BuilderUser, CloudflareConfig, CompetitiveEvent, CompetitivePlayer, CtaConfig, EventItem, HeroConfig, NewsArticle, SocialPlatform, TeamGroup, TickerConfig } from "../types/builder";
+import type { AllyItem, BuilderSectionKey, BuilderState, BuilderUser, CloudflareConfig, CompetitiveEvent, CompetitivePlayer, CtaConfig, EventItem, HeroConfig, HomeClipsConfig, NewsArticle, SocialPlatform, TeamGroup, TickerConfig } from "../types/builder";
 
 
 
@@ -701,6 +701,12 @@ export const BUILDER_SECTIONS_LIST: {
     tag: "Portada",
   },
   {
+    id: "home-clips",
+    title: "Clips del Home",
+    description: "Visualizador de video, subida de clips MP4 a Cloudflare R2 y título inferior.",
+    tag: "Visualizador",
+  },
+  {
     id: "ticker",
     title: "Display Deslizante (Banner)",
     description: "Cinta horizontal con loop de titulares y logotipos.",
@@ -786,6 +792,12 @@ export const DEFAULT_TICKER_CONFIG: TickerConfig = {
   ],
 };
 
+export const DEFAULT_HOME_CLIPS_CONFIG: HomeClipsConfig = {
+  title: "Highlight Reel",
+  activeClipUrl: "",
+  clips: [],
+};
+
 export const DEFAULT_CTA_CONFIG: CtaConfig = {
   eyebrow: "Overplay Tourney 4 te espera",
   titleMain: "¿Listo para ",
@@ -823,6 +835,7 @@ export const INITIAL_BUILDER_STATE: BuilderState = {
   competitiveEvents: INITIAL_COMPETITIVE_EVENTS,
   allies: INITIAL_ALLIES,
   heroConfig: DEFAULT_HERO_CONFIG,
+  homeClipsConfig: DEFAULT_HOME_CLIPS_CONFIG,
   tickerConfig: DEFAULT_TICKER_CONFIG,
   ctaConfig: DEFAULT_CTA_CONFIG,
   currentUser: null,
