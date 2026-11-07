@@ -21,6 +21,9 @@ import type {
   SocialPlatform,
   TeamGroup,
   TeamMember,
+  PastChampion,
+  PastChampionsConfig,
+  ChampionMember,
   TourneyInfoItem,
   AllyItem,
   BuilderUser,
@@ -40,6 +43,7 @@ import {
   INITIAL_EVENTS,
   INITIAL_NEWS,
   INITIAL_BUILDER_USERS,
+  DEFAULT_PAST_CHAMPIONS_CONFIG,
   SUPER_ADMIN_EMAIL,
   SUPER_ADMIN_USERNAME,
   BUILDER_SECTIONS_LIST,
@@ -181,6 +185,13 @@ interface BuilderContextType {
   ) => void;
   setAlliesList: (allies: AllyItem[]) => void;
   generateAlliesTSCode: () => string;
+  // Past Champions operations
+  updatePastChampionsConfig: (updates: Partial<PastChampionsConfig>) => void;
+  addPastChampion: (champData?: Partial<PastChampion>) => void;
+  updatePastChampion: (id: string, updates: Partial<PastChampion>) => void;
+  removePastChampion: (id: string) => void;
+  movePastChampion: (id: string, direction: "left" | "right") => void;
+  setPastChampionsList: (champions: PastChampion[]) => void;
   // Site Info operations
   updateSiteInfo: (updates: Partial<SiteInfo>) => void;
   updateTickerItems: (items: string[]) => void;
@@ -252,6 +263,11 @@ export function BuilderProvider({ children }: { children: ReactNode }) {
             parsed.allies.length > 0
               ? parsed.allies
               : INITIAL_ALLIES,
+          pastChampionsConfig:
+            parsed.pastChampionsConfig &&
+            Array.isArray(parsed.pastChampionsConfig?.champions)
+              ? parsed.pastChampionsConfig
+              : DEFAULT_PAST_CHAMPIONS_CONFIG,
           cloudflareConfig: {
             accountId: parsed.cloudflareConfig?.accountId?.trim() || DEFAULT_CLOUDFLARE_CONFIG.accountId,
             bucketName: parsed.cloudflareConfig?.bucketName?.trim() || DEFAULT_CLOUDFLARE_CONFIG.bucketName,
@@ -1664,6 +1680,106 @@ Escribe aquí el cuerpo del artículo con toda la información relevante.
     }));
   };
 
+  // Past Champions operations
+  const updatePastChampionsConfig = (updates: Partial<PastChampionsConfig>) => {
+    setState((prev) => ({
+      ...prev,
+      pastChampionsConfig: {
+        ...(prev.pastChampionsConfig || DEFAULT_PAST_CHAMPIONS_CONFIG),
+        ...updates,
+      },
+    }));
+  };
+
+  const addPastChampion = (champData?: Partial<PastChampion>) => {
+    setState((prev) => {
+      const current = prev.pastChampionsConfig || DEFAULT_PAST_CHAMPIONS_CONFIG;
+      const newChamp: PastChampion = {
+        id: `champ-${Date.now()}`,
+        tournamentName: champData?.tournamentName || "Nuevo Torneo",
+        date: champData?.date || "Mes 2026",
+        teamName: champData?.teamName || "Equipo Campeón",
+        teamLogo: champData?.teamLogo || "",
+        gradient: champData?.gradient || "from-amber-500 to-orange-600",
+        members: champData?.members || [
+          { name: "Jugador 1", role: "Tank" },
+          { name: "Jugador 2", role: "DPS" },
+          { name: "Jugador 3", role: "DPS" },
+          { name: "Jugador 4", role: "Support" },
+          { name: "Jugador 5", role: "Support" },
+        ],
+      };
+      return {
+        ...prev,
+        pastChampionsConfig: {
+          ...current,
+          champions: [...current.champions, newChamp],
+        },
+      };
+    });
+  };
+
+  const updatePastChampion = (id: string, updates: Partial<PastChampion>) => {
+    setState((prev) => {
+      const current = prev.pastChampionsConfig || DEFAULT_PAST_CHAMPIONS_CONFIG;
+      return {
+        ...prev,
+        pastChampionsConfig: {
+          ...current,
+          champions: current.champions.map((c) =>
+            c.id === id ? { ...c, ...updates } : c
+          ),
+        },
+      };
+    });
+  };
+
+  const removePastChampion = (id: string) => {
+    setState((prev) => {
+      const current = prev.pastChampionsConfig || DEFAULT_PAST_CHAMPIONS_CONFIG;
+      return {
+        ...prev,
+        pastChampionsConfig: {
+          ...current,
+          champions: current.champions.filter((c) => c.id !== id),
+        },
+      };
+    });
+  };
+
+  const movePastChampion = (id: string, direction: "left" | "right") => {
+    setState((prev) => {
+      const current = prev.pastChampionsConfig || DEFAULT_PAST_CHAMPIONS_CONFIG;
+      const list = [...current.champions];
+      const index = list.findIndex((c) => c.id === id);
+      if (index === -1) return prev;
+      const targetIndex = direction === "left" ? index - 1 : index + 1;
+      if (targetIndex < 0 || targetIndex >= list.length) return prev;
+      const [removed] = list.splice(index, 1);
+      list.splice(targetIndex, 0, removed);
+      return {
+        ...prev,
+        pastChampionsConfig: {
+          ...current,
+          champions: list,
+        },
+      };
+    });
+  };
+
+  const setPastChampionsList = (champions: PastChampion[]) => {
+    setState((prev) => {
+      const current = prev.pastChampionsConfig || DEFAULT_PAST_CHAMPIONS_CONFIG;
+      return {
+        ...prev,
+        pastChampionsConfig: {
+          ...current,
+          champions,
+        },
+      };
+    });
+  };
+
   const generateAlliesTSCode = () => {
     const cleanAllies = (state.allies || []).map((a) => {
       const activeSocials: Record<string, string> = {};
@@ -1756,6 +1872,12 @@ Escribe aquí el cuerpo del artículo con toda la información relevante.
         updateAllySocialUrl,
         setAlliesList,
         generateAlliesTSCode,
+        updatePastChampionsConfig,
+        addPastChampion,
+        updatePastChampion,
+        removePastChampion,
+        movePastChampion,
+        setPastChampionsList,
         updateSiteInfo,
         updateTickerItems,
         currentUser,

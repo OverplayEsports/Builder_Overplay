@@ -1,4 +1,4 @@
-import type { AllyItem, BuilderSectionKey, BuilderState, BuilderUser, CloudflareConfig, CompetitiveEvent, CompetitivePlayer, CtaConfig, EventItem, HeroConfig, HomeClipsConfig, NewsArticle, SocialPlatform, TeamGroup, TickerConfig } from "../types/builder";
+import type { AllyItem, BuilderSectionKey, BuilderState, BuilderUser, CloudflareConfig, CompetitiveEvent, CompetitivePlayer, CtaConfig, EventItem, HeroConfig, HomeClipsConfig, NewsArticle, PastChampionsConfig, SocialPlatform, TeamGroup, TickerConfig } from "../types/builder";
 
 
 
@@ -808,6 +808,58 @@ export const DEFAULT_CTA_CONFIG: CtaConfig = {
   bannerImage: "/images/tourney-banner.jpg",
 };
 
+export const DEFAULT_PAST_CHAMPIONS_CONFIG: PastChampionsConfig = {
+  title: "Antiguos Campeones",
+  description: "El salón de la gloria de Overplay: los equipos y jugadores que alcanzaron la cima en nuestros torneos oficiales.",
+  champions: [
+    {
+      id: "champ-1",
+      tournamentName: "Overplay Tourney 3",
+      date: "Noviembre 2025",
+      teamName: "Dark Pulse",
+      teamLogo: "",
+      gradient: "from-amber-500 to-orange-600",
+      members: [
+        { name: "KRON", role: "Tank" },
+        { name: "VIPER", role: "DPS Hitscan" },
+        { name: "NOVA", role: "DPS Flex" },
+        { name: "LUNAR", role: "Main Support" },
+        { name: "ORBE", role: "Flex Support" },
+      ],
+    },
+    {
+      id: "champ-2",
+      tournamentName: "Overplay Tourney 2",
+      date: "Julio 2025",
+      teamName: "Vortex Gaming",
+      teamLogo: "",
+      gradient: "from-orange-500 to-rose-600",
+      members: [
+        { name: "Aner", role: "Tank" },
+        { name: "Sher", role: "DPS" },
+        { name: "Zation", role: "DPS" },
+        { name: "Yor", role: "Support" },
+        { name: "Finis", role: "Support" },
+      ],
+    },
+    {
+      id: "champ-3",
+      tournamentName: "Overplay Tourney 1",
+      date: "Diciembre 2024",
+      teamName: "Solaris Esports",
+      teamLogo: "",
+      gradient: "from-rose-500 to-violet-600",
+      members: [
+        { name: "Mirko", role: "Tank" },
+        { name: "Sait", role: "DPS" },
+        { name: "Dash", role: "DPS" },
+        { name: "Feroz", role: "Support" },
+        { name: "Blaze", role: "Support" },
+      ],
+    },
+  ],
+};
+
 export const INITIAL_BUILDER_STATE: BuilderState = {
   teamGroups: INITIAL_TEAM_GROUPS,
   events: INITIAL_EVENTS,
@@ -836,6 +888,7 @@ export const INITIAL_BUILDER_STATE: BuilderState = {
   allies: INITIAL_ALLIES,
   heroConfig: DEFAULT_HERO_CONFIG,
   homeClipsConfig: DEFAULT_HOME_CLIPS_CONFIG,
+  pastChampionsConfig: DEFAULT_PAST_CHAMPIONS_CONFIG,
   tickerConfig: DEFAULT_TICKER_CONFIG,
   ctaConfig: DEFAULT_CTA_CONFIG,
   currentUser: null,

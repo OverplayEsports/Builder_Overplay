@@ -697,7 +697,7 @@ CREATE POLICY IF NOT EXISTS "Escritura competitive_players" ON public.competitiv
                               <div
                                 key={idx}
                                 title={hero}
-                                className="group/hero relative h-9 w-9 sm:h-10 sm:w-10 shrink-0 overflow-hidden rounded-xl border border-white/20 bg-black/70 p-0.5 shadow-md ring-1 ring-white/10 transition-transform hover:scale-110"
+                                className="group/hero relative h-9 w-9 sm:h-10 sm:w-10 shrink-0 overflow-hidden rounded-xl border border-white/20 bg-black/70 p-0.5 shadow-md ring-1 ring-white/10"
                               >
                                 <img
                                   src={getHeroImageUrl(hero)}

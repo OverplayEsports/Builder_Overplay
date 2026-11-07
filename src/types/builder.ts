@@ -227,6 +227,27 @@ export interface HomeClipsConfig {
   clips: HomeClipItem[];
 }
 
+export interface ChampionMember {
+  name: string;
+  role: string;
+}
+
+export interface PastChampion {
+  id: string;
+  tournamentName: string;
+  date: string;
+  teamName: string;
+  teamLogo?: string;
+  gradient?: string;
+  members: ChampionMember[];
+}
+
+export interface PastChampionsConfig {
+  title: string;
+  description: string;
+  champions: PastChampion[];
+}
+
 export type BuilderTab =
   | "dashboard"
   | "about"
@@ -243,8 +264,6 @@ export type BuilderTab =
   | "users"
   | "code";
 
-
-
 export interface BuilderState {
   teamGroups: TeamGroup[];
   siteInfo: SiteInfo;
@@ -259,6 +278,7 @@ export interface BuilderState {
   allies?: AllyItem[];
   heroConfig?: HeroConfig;
   homeClipsConfig?: HomeClipsConfig;
+  pastChampionsConfig?: PastChampionsConfig;
   tickerConfig?: TickerConfig;
   ctaConfig?: CtaConfig;
   currentUser?: BuilderUser | null;

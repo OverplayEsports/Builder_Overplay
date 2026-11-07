@@ -22,15 +22,22 @@ import {
   CheckCircle2,
   AlertCircle,
   Loader2,
+  Trophy,
+  Crown,
+  Calendar,
+  ChevronDown,
+  UserPlus,
 } from "lucide-react";
 import { useBuilder } from "../../context/BuilderContext";
-import { GRADIENT_PRESETS } from "../../data/initialData";
+import { GRADIENT_PRESETS, DEFAULT_PAST_CHAMPIONS_CONFIG } from "../../data/initialData";
 import { supabase } from "../../lib/supabase";
 import type {
   GroupAccent,
   SocialPlatform,
   TeamGroup,
   TeamMember,
+  PastChampion,
+  ChampionMember,
 } from "../../types/builder";
 import { MonogramAvatar } from "../ui/MonogramAvatar";
 import { SocialButton, SOCIAL_META } from "../ui/SocialIcons";
@@ -66,6 +73,12 @@ export function AboutEditor() {
     setTeamGroups,
     toggleMemberSocial,
     updateMemberSocialUrl,
+    updatePastChampionsConfig,
+    addPastChampion,
+    updatePastChampion,
+    removePastChampion,
+    movePastChampion,
+    setPastChampionsList,
   } = useBuilder();
 
   const [selectedGroup, setSelectedGroup] = useState<string>(
@@ -83,6 +96,11 @@ export function AboutEditor() {
 
   const [editingGroupMeta, setEditingGroupMeta] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const championLogoInputRef = useRef<HTMLInputElement>(null);
+
+  // Estado para modal de Campeón
+  const [editingChampion, setEditingChampion] = useState<PastChampion | null>(null);
+  const [isUploadingChampLogo, setIsUploadingChampLogo] = useState(false);
 
   // Cargar automáticamente datos de equipo desde Supabase al montar
   useEffect(() => {
@@ -201,6 +219,74 @@ export function AboutEditor() {
     }
   };
 
+  // Subida directa de Logo del Campeón al Cloudflare R2 Bucket
+  const uploadChampLogoToR2 = async (file: File): Promise<string> => {
+    const accountId =
+      state.cloudflareConfig?.accountId?.trim() || "a7d64e57350dbbddcc2b65f7d8ede3a0";
+    const bucketName =
+      state.cloudflareConfig?.bucketName?.trim() || "imagenesoverplay";
+    const accessKeyId =
+      state.cloudflareConfig?.accessKeyId?.trim() || "cbce2ec53f08bc186b64d463df8325f0";
+    const secretAccessKey =
+      state.cloudflareConfig?.secretAccessKey?.trim() ||
+      "aaf8802d017d1da21588dc44e4bb886e5ed1cfddad234900faa874fe1ff0e780";
+    const publicUrl =
+      state.cloudflareConfig?.publicUrl?.trim() ||
+      "https://pub-def6d9ceb4ef4e8f84ee8a391d2b0b27.r2.dev";
+
+    const cleanBaseName = file.name
+      .replace(/\.[^/.]+$/, "")
+      .replace(/[^a-zA-Z0-9_-]/g, "-")
+      .toLowerCase();
+    const ext = (file.name.split(".").pop() || "webp").toLowerCase();
+    const fileKey = `champions/${Date.now()}-${cleanBaseName}.${ext}`;
+
+    const s3Client = new S3Client({
+      region: "auto",
+      endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
+      credentials: {
+        accessKeyId,
+        secretAccessKey,
+      },
+    });
+
+    const fileBytes = new Uint8Array(await file.arrayBuffer());
+
+    const uploadCmd = new PutObjectCommand({
+      Bucket: bucketName,
+      Key: fileKey,
+      Body: fileBytes,
+      ContentType: file.type || "image/jpeg",
+      ContentLength: fileBytes.byteLength,
+    });
+
+    await s3Client.send(uploadCmd);
+    return `${publicUrl.replace(/\/+$/, "")}/${fileKey}`;
+  };
+
+  const handleChampLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !editingChampion) return;
+    setIsUploadingChampLogo(true);
+    setSyncError(null);
+
+    try {
+      const cdnUrl = await uploadChampLogoToR2(file);
+      setEditingChampion({
+        ...editingChampion,
+        teamLogo: cdnUrl,
+      });
+      setSyncSuccess("¡Logo del equipo subido a Cloudflare R2 con éxito!");
+      setTimeout(() => setSyncSuccess(null), 3500);
+    } catch (err: any) {
+      console.error("Error al subir logo:", err);
+      setSyncError(err.message || "Error al subir logo a Cloudflare R2");
+    } finally {
+      setIsUploadingChampLogo(false);
+      if (championLogoInputRef.current) championLogoInputRef.current.value = "";
+    }
+  };
+
   // Guardar en Supabase
   const handleSaveToSupabase = async () => {
     setIsSyncingSupabase(true);
@@ -254,7 +340,25 @@ export function AboutEditor() {
         if (memberError) throw memberError;
       }
 
-      setSyncSuccess("¡Equipo sincronizado y guardado con éxito en Supabase!");
+      // 3. Guardar Antiguos Campeones en config_past_champions
+      const championsConfigToSave = state.pastChampionsConfig || DEFAULT_PAST_CHAMPIONS_CONFIG;
+      const { error: champError } = await supabase
+        .from("team_groups")
+        .upsert(
+          {
+            id: "config_past_champions",
+            title: championsConfigToSave.title || "Antiguos Campeones",
+            description: JSON.stringify(championsConfigToSave),
+            accent: "ember",
+            order_index: 996,
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: "id" }
+        );
+
+      if (champError) throw champError;
+
+      setSyncSuccess("¡Equipo y Antiguos Campeones sincronizados y guardados con éxito en Supabase!");
       setTimeout(() => setSyncSuccess(null), 4000);
     } catch (err: any) {
       console.error("Error al guardar en Supabase:", err);
@@ -271,6 +375,27 @@ export function AboutEditor() {
     setSyncError(null);
 
     try {
+      // Cargar Antiguos Campeones si existen
+      const { data: champRow } = await supabase
+        .from("team_groups")
+        .select("description")
+        .eq("id", "config_past_champions")
+        .single();
+
+      if (champRow?.description) {
+        try {
+          const parsedChamp =
+            typeof champRow.description === "string"
+              ? JSON.parse(champRow.description)
+              : champRow.description;
+          if (parsedChamp && Array.isArray(parsedChamp.champions)) {
+            updatePastChampionsConfig(parsedChamp);
+          }
+        } catch (e) {
+          console.warn("Error parseando campeones de Supabase:", e);
+        }
+      }
+
       const { data: dbGroups, error: gErr } = await supabase
         .from("team_groups")
         .select("*")
@@ -711,6 +836,220 @@ export function AboutEditor() {
           </div>
         </div>
       )}
+
+      {/* SECCIÓN DEDICADA: GESTOR DE ANTIGUOS CAMPEONES */}
+      <div className="mt-14 pt-10 border-t border-white/10">
+        <div className="card-surface rounded-2xl p-6 border border-amber-500/20 bg-amber-500/[0.02]">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-3">
+              <span className="flex h-11 w-11 items-center justify-center rounded-xl border border-amber-400/30 bg-amber-500/10 text-amber-300">
+                <Trophy className="h-5 w-5" />
+              </span>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="font-display text-xl font-bold uppercase italic text-white">
+                    {state.pastChampionsConfig?.title || "Antiguos Campeones"}
+                  </h3>
+                  <span className="rounded-md border border-amber-400/30 bg-amber-500/10 px-2 py-0.5 text-[10px] font-bold uppercase text-amber-300">
+                    {(state.pastChampionsConfig?.champions || []).length} Torneos
+                  </span>
+                </div>
+                <p className="text-xs text-white/50 mt-0.5">
+                  Gestiona las casillas de los equipos ganadores, fechas y jugadores con sus roles.
+                </p>
+              </div>
+            </div>
+
+            <Button
+              size="sm"
+              onClick={() => {
+                const newC: PastChampion = {
+                  id: `champ-${Date.now()}`,
+                  tournamentName: "Nuevo Torneo",
+                  date: "Mes 2026",
+                  teamName: "Equipo Campeón",
+                  teamLogo: "",
+                  gradient: "from-amber-500 to-orange-600",
+                  members: [
+                    { name: "Jugador 1", role: "Tank" },
+                    { name: "Jugador 2", role: "DPS" },
+                    { name: "Jugador 3", role: "DPS" },
+                    { name: "Jugador 4", role: "Support" },
+                    { name: "Jugador 5", role: "Support" },
+                  ],
+                };
+                addPastChampion(newC);
+                setEditingChampion(newC);
+              }}
+              className="bg-amber-500 hover:bg-amber-600 text-black font-bold"
+            >
+              <Plus className="h-4 w-4" />
+              Agregar Torneo Campeón
+            </Button>
+          </div>
+
+          {/* Grid de Casillas de Campeones */}
+          <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {(state.pastChampionsConfig?.champions || []).map((champ, index) => {
+              const membersCount = champ.members?.length || 0;
+              const hasLogo = typeof champ.teamLogo === "string" && champ.teamLogo.trim().length > 0;
+
+              return (
+                <div
+                  key={champ.id}
+                  className="card-surface group relative flex flex-col overflow-hidden rounded-2xl border border-white/10 p-3 sm:p-3.5 transition-all duration-300 hover:border-amber-400/40 hover:shadow-[0_12px_40px_-16px_rgba(251,191,36,0.3)]"
+                >
+                  {/* Controles de orden y acciones */}
+                  <div className="absolute right-2 top-2 flex items-center gap-1 opacity-0 transition-opacity duration-200 group-hover:opacity-100 z-20 bg-[#07070a]/95 rounded-lg p-1 border border-white/15 backdrop-blur-sm shadow-lg">
+                    <button
+                      onClick={() => movePastChampion(champ.id, "left")}
+                      disabled={index === 0}
+                      title="Mover a la izquierda"
+                      className="p-1 text-white/50 hover:text-white disabled:opacity-20 cursor-pointer"
+                    >
+                      <MoveLeft className="h-3 w-3" />
+                    </button>
+                    <button
+                      onClick={() => movePastChampion(champ.id, "right")}
+                      disabled={index === (state.pastChampionsConfig?.champions || []).length - 1}
+                      title="Mover a la derecha"
+                      className="p-1 text-white/50 hover:text-white disabled:opacity-20 cursor-pointer"
+                    >
+                      <MoveRight className="h-3 w-3" />
+                    </button>
+                    <button
+                      onClick={() => setEditingChampion({ ...champ })}
+                      title="Editar casilla de campeón"
+                      className="p-1 text-amber-400 hover:text-amber-300 cursor-pointer"
+                    >
+                      <Edit3 className="h-3 w-3" />
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (confirm(`¿Eliminar la casilla de "${champ.tournamentName}"?`)) {
+                          removePastChampion(champ.id);
+                        }
+                      }}
+                      title="Eliminar casilla"
+                      className="p-1 text-rose-400 hover:text-rose-300 cursor-pointer"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </button>
+                  </div>
+
+                  {/* 1. Bloque Horizontal Principal (Estilo idéntico a Web) */}
+                  <div
+                    onClick={() => setEditingChampion({ ...champ })}
+                    className="relative min-h-[105px] overflow-hidden cursor-pointer"
+                  >
+                    <div
+                      className="absolute left-0 top-0 bottom-0 w-24 sm:w-28 overflow-hidden pointer-events-none rounded-xl"
+                      style={{
+                        maskImage: "linear-gradient(to right, black 50%, transparent 95%)",
+                        WebkitMaskImage: "linear-gradient(to right, black 50%, transparent 95%)",
+                      }}
+                    >
+                      {hasLogo ? (
+                        <img
+                          src={champ.teamLogo}
+                          alt={champ.teamName}
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <div
+                          className={cn(
+                            "h-full w-full flex items-center justify-center font-display text-amber-300 bg-gradient-to-br",
+                            champ.gradient || "from-amber-500 to-orange-600"
+                          )}
+                        >
+                          <Trophy className="h-8 w-8 text-white/90" />
+                        </div>
+                      )}
+                      <div className="absolute inset-y-0 right-0 w-12 bg-gradient-to-r from-transparent to-[#0b0b0e] pointer-events-none" />
+                    </div>
+
+                    <div className="relative z-10 flex h-full flex-col justify-between pl-20 sm:pl-24 pr-2 py-2">
+                      <div>
+                        <div className="flex items-start justify-between gap-1">
+                          <h4 className="font-display text-sm sm:text-base font-bold uppercase italic tracking-wide text-white truncate">
+                            {champ.tournamentName}
+                          </h4>
+                          <span className="inline-flex items-center gap-0.5 rounded-md border border-amber-400/30 bg-amber-400/10 px-1 py-0.5 font-display text-[8px] font-bold uppercase text-amber-300 shrink-0">
+                            <Crown className="h-2 w-2" />
+                            Campeón
+                          </span>
+                        </div>
+                        <p className="flex items-center gap-1 text-[11px] font-semibold text-white/50 font-display mt-0.5 truncate">
+                          <Calendar className="h-2.5 w-2.5 text-amber-400/80" />
+                          <span>{champ.date}</span>
+                        </p>
+                      </div>
+
+                      <div className="mt-2 flex items-center justify-between">
+                        <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wide truncate">
+                          {champ.teamName}
+                        </span>
+                        <span className="text-[9px] text-white/40 font-mono">
+                          {membersCount} jugadores
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Botón rápido editar */}
+                  <div className="mt-2 pt-2 border-t border-white/[0.06] flex items-center justify-between">
+                    <span className="text-[10px] text-white/40 italic">Haz clic para editar roster</span>
+                    <button
+                      type="button"
+                      onClick={() => setEditingChampion({ ...champ })}
+                      className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-400 hover:text-amber-300"
+                    >
+                      <Edit3 className="h-2.5 w-2.5" />
+                      Editar
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+
+            {/* Quick Add Champion Button */}
+            <button
+              onClick={() => {
+                const newC: PastChampion = {
+                  id: `champ-${Date.now()}`,
+                  tournamentName: "Nuevo Torneo",
+                  date: "Mes 2026",
+                  teamName: "Equipo Campeón",
+                  teamLogo: "",
+                  gradient: "from-amber-500 to-orange-600",
+                  members: [
+                    { name: "Jugador 1", role: "Tank" },
+                    { name: "Jugador 2", role: "DPS" },
+                    { name: "Jugador 3", role: "DPS" },
+                    { name: "Jugador 4", role: "Support" },
+                    { name: "Jugador 5", role: "Support" },
+                  ],
+                };
+                addPastChampion(newC);
+                setEditingChampion(newC);
+              }}
+              className="group flex min-h-[105px] flex-row items-center justify-center gap-3 rounded-2xl border border-dashed border-amber-400/25 bg-amber-500/[0.02] p-4 text-left transition-all duration-300 hover:border-amber-400/50 hover:bg-amber-500/[0.06] cursor-pointer"
+            >
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-amber-400/30 bg-amber-500/10 text-amber-400 transition-transform duration-300 group-hover:scale-110">
+                <Plus className="h-5 w-5" />
+              </span>
+              <div>
+                <p className="font-display text-xs font-bold uppercase tracking-wider text-amber-300 group-hover:text-amber-200">
+                  Agregar Torneo
+                </p>
+                <p className="mt-0.5 text-[11px] text-white/40">
+                  Nuevo campeón al Hall of Fame
+                </p>
+              </div>
+            </button>
+          </div>
+        </div>
+      </div>
 
       {/* Member Edit Modal / Drawer */}
       {editingMember && (
@@ -1188,7 +1527,309 @@ export function AboutEditor() {
                 </div>
               </div>
 
-              {/* Modal Actions */}
+              {/* MODAL PARA EDITAR TORNEO CAMPEÓN */}
+      {editingChampion && (
+        <div className="fixed inset-x-0 top-16 bottom-0 z-40 flex items-center justify-center p-2 sm:p-4 md:p-6 overflow-y-auto bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
+          <div className="card-surface relative my-auto flex max-h-[calc(100vh-5rem)] w-full max-w-2xl flex-col overflow-hidden rounded-2xl sm:rounded-3xl border border-amber-500/30 bg-[#0a0a0e] p-4 sm:p-6 md:p-8 shadow-2xl">
+            {/* Modal Header */}
+            <div className="flex shrink-0 items-center justify-between border-b border-white/10 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/10 border border-amber-400/30 text-amber-400">
+                  <Trophy className="h-5 w-5" />
+                </div>
+                <div>
+                  <h3 className="font-display text-xl font-bold uppercase italic text-white">
+                    Editar Torneo Campeón
+                  </h3>
+                  <p className="text-xs text-white/50">
+                    Ajusta los detalles del torneo, equipo ganador y lista de participantes.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setEditingChampion(null)}
+                className="rounded-full p-2 text-white/40 hover:bg-white/10 hover:text-white cursor-pointer"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="mt-6 flex-1 overflow-y-auto space-y-5 pr-1">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-white/70 mb-1.5">
+                    Nombre del Torneo <span className="text-amber-400">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={editingChampion.tournamentName}
+                    onChange={(e) =>
+                      setEditingChampion({
+                        ...editingChampion,
+                        tournamentName: e.target.value,
+                      })
+                    }
+                    placeholder="Ej: Overplay Tourney 3"
+                    className="w-full rounded-xl border border-white/15 bg-black/50 px-3.5 py-2 text-sm text-white focus:border-amber-500 focus:outline-none font-semibold"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-white/70 mb-1.5">
+                    Fecha del Torneo
+                  </label>
+                  <input
+                    type="text"
+                    value={editingChampion.date}
+                    onChange={(e) =>
+                      setEditingChampion({
+                        ...editingChampion,
+                        date: e.target.value,
+                      })
+                    }
+                    placeholder="Ej: Noviembre 2025"
+                    className="w-full rounded-xl border border-white/15 bg-black/50 px-3.5 py-2 text-sm text-white focus:border-amber-500 focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-white/70 mb-1.5">
+                    Nombre del Equipo Campeón <span className="text-amber-400">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={editingChampion.teamName}
+                    onChange={(e) =>
+                      setEditingChampion({
+                        ...editingChampion,
+                        teamName: e.target.value,
+                      })
+                    }
+                    placeholder="Ej: Dark Pulse"
+                    className="w-full rounded-xl border border-white/15 bg-black/50 px-3.5 py-2 text-sm text-white focus:border-amber-500 focus:outline-none font-semibold"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-white/70 mb-1.5">
+                    Degradado de Respaldo
+                  </label>
+                  <select
+                    value={editingChampion.gradient || "from-amber-500 to-orange-600"}
+                    onChange={(e) =>
+                      setEditingChampion({
+                        ...editingChampion,
+                        gradient: e.target.value,
+                      })
+                    }
+                    className="w-full rounded-xl border border-white/15 bg-[#101014] px-3.5 py-2 text-sm text-white focus:border-amber-500 focus:outline-none"
+                  >
+                    {GRADIENT_PRESETS.map((g) => (
+                      <option key={g.id} value={g.value}>
+                        {g.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Subida o URL del Logo */}
+              <div className="card-surface p-4 rounded-2xl border border-white/10 space-y-3">
+                <label className="block text-xs font-bold uppercase tracking-wider text-white/70">
+                  Logo / Imagen del Equipo
+                </label>
+                <div className="flex flex-col sm:flex-row items-center gap-3">
+                  <div className="h-16 w-16 shrink-0 rounded-xl overflow-hidden border border-white/15 bg-black/50 flex items-center justify-center">
+                    {editingChampion.teamLogo ? (
+                      <img
+                        src={editingChampion.teamLogo}
+                        alt="Logo Preview"
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <Trophy className="h-7 w-7 text-amber-400" />
+                    )}
+                  </div>
+                  <div className="flex-1 w-full space-y-2">
+                    <input
+                      type="text"
+                      value={editingChampion.teamLogo || ""}
+                      onChange={(e) =>
+                        setEditingChampion({
+                          ...editingChampion,
+                          teamLogo: e.target.value,
+                        })
+                      }
+                      placeholder="https://... URL directa de imagen o sube un archivo"
+                      className="w-full rounded-xl border border-white/15 bg-black/40 px-3 py-1.5 text-xs text-white focus:border-amber-500 focus:outline-none"
+                    />
+                    <div className="flex items-center gap-2">
+                      <input
+                        ref={championLogoInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handleChampLogoUpload}
+                        className="hidden"
+                      />
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => championLogoInputRef.current?.click()}
+                        disabled={isUploadingChampLogo}
+                        className="text-xs"
+                      >
+                        {isUploadingChampLogo ? (
+                          <>
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            Subiendo...
+                          </>
+                        ) : (
+                          <>
+                            <Upload className="h-3.5 w-3.5 text-amber-400" />
+                            Subir Imagen a R2
+                          </>
+                        )}
+                      </Button>
+                      {editingChampion.teamLogo && (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setEditingChampion({
+                              ...editingChampion,
+                              teamLogo: "",
+                            })
+                          }
+                          className="text-[11px] text-white/40 hover:text-rose-400"
+                        >
+                          Quitar logo
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Roster de Participantes y sus Roles */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-white/70">
+                    Alineación / Participantes ({editingChampion.members?.length || 0})
+                  </label>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => {
+                      const updated = [
+                        ...(editingChampion.members || []),
+                        { name: "Nuevo Jugador", role: "DPS" },
+                      ];
+                      setEditingChampion({
+                        ...editingChampion,
+                        members: updated,
+                      });
+                    }}
+                    className="text-xs text-amber-300 hover:text-amber-200"
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                    Agregar Jugador
+                  </Button>
+                </div>
+
+                <div className="space-y-2">
+                  {(editingChampion.members || []).map((member, mIdx) => (
+                    <div
+                      key={mIdx}
+                      className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.02] p-2"
+                    >
+                      <span className="font-mono text-xs text-white/30 px-1">
+                        #{mIdx + 1}
+                      </span>
+                      <input
+                        type="text"
+                        value={member.name}
+                        onChange={(e) => {
+                          const updated = [...editingChampion.members];
+                          updated[mIdx] = { ...updated[mIdx], name: e.target.value };
+                          setEditingChampion({
+                            ...editingChampion,
+                            members: updated,
+                          });
+                        }}
+                        placeholder="Nombre / Tag"
+                        className="flex-1 rounded-lg border border-white/10 bg-black/40 px-2.5 py-1 text-xs text-white focus:border-amber-500 focus:outline-none font-semibold"
+                      />
+                      <input
+                        type="text"
+                        value={member.role}
+                        onChange={(e) => {
+                          const updated = [...editingChampion.members];
+                          updated[mIdx] = { ...updated[mIdx], role: e.target.value };
+                          setEditingChampion({
+                            ...editingChampion,
+                            members: updated,
+                          });
+                        }}
+                        placeholder="Rol (Tank, DPS, Support...)"
+                        className="w-32 sm:w-40 rounded-lg border border-white/10 bg-black/40 px-2.5 py-1 text-xs text-amber-300 focus:border-amber-500 focus:outline-none"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const updated = editingChampion.members.filter(
+                            (_, idx) => idx !== mIdx
+                          );
+                          setEditingChampion({
+                            ...editingChampion,
+                            members: updated,
+                          });
+                        }}
+                        className="p-1 text-white/40 hover:text-rose-400 cursor-pointer"
+                        title="Eliminar jugador"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Actions */}
+            <div className="mt-6 flex shrink-0 items-center justify-end gap-3 border-t border-white/10 pt-4">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setEditingChampion(null)}
+              >
+                Cancelar
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                onClick={() => {
+                  if (!editingChampion.tournamentName.trim()) return;
+                  updatePastChampion(editingChampion.id, editingChampion);
+                  setEditingChampion(null);
+                  setSyncSuccess("Casilla de campeón actualizada. ¡No olvides hacer clic en Guardar en Supabase!");
+                  setTimeout(() => setSyncSuccess(null), 3500);
+                }}
+                className="bg-amber-500 hover:bg-amber-600 text-black font-bold"
+              >
+                <Check className="h-4 w-4" />
+                Guardar Cambios
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Actions */}
               <div className="mt-8 flex shrink-0 items-center justify-end gap-3 border-t border-white/10 pt-4">
                 <Button
                   type="button"
