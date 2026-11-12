@@ -1527,7 +1527,31 @@ export function AboutEditor() {
                 </div>
               </div>
 
-              {/* MODAL PARA EDITAR TORNEO CAMPEÓN */}
+              {/* Modal Actions */}
+              <div className="mt-8 flex shrink-0 items-center justify-end gap-3 border-t border-white/10 pt-4">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowNewGroupModal(false)}
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  type="submit"
+                  size="sm"
+                  disabled={!newGroupTitle.trim()}
+                >
+                  <Plus className="h-4 w-4" />
+                  Crear Apartado
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    
+      {/* MODAL PARA EDITAR TORNEO CAMPEÓN */}
       {editingChampion && (
         <div className="fixed inset-x-0 top-16 bottom-0 z-40 flex items-center justify-center p-2 sm:p-4 md:p-6 overflow-y-auto bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
           <div className="card-surface relative my-auto flex max-h-[calc(100vh-5rem)] w-full max-w-2xl flex-col overflow-hidden rounded-2xl sm:rounded-3xl border border-amber-500/30 bg-[#0a0a0e] p-4 sm:p-6 md:p-8 shadow-2xl">
@@ -1829,29 +1853,7 @@ export function AboutEditor() {
         </div>
       )}
 
-      {/* Modal Actions */}
-              <div className="mt-8 flex shrink-0 items-center justify-end gap-3 border-t border-white/10 pt-4">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowNewGroupModal(false)}
-                >
-                  Cancelar
-                </Button>
-                <Button
-                  type="submit"
-                  size="sm"
-                  disabled={!newGroupTitle.trim()}
-                >
-                  <Plus className="h-4 w-4" />
-                  Crear Apartado
-                </Button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      
     </div>
   );
 }
