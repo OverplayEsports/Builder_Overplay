@@ -43,7 +43,7 @@ export function EmailTemplateEditor() {
     "Este es un mensaje automático de respaldo. Si no solicitaste esta inscripción, puedes ignorar este correo."
   );
   const [logoUrl, setLogoUrl] = useState(
-    "https://pub-def6d9ceb4ef4e8f84ee8a391d2b0b27.r2.dev/branding/Logo_Overplay.png"
+    "https://pub-def6d9ceb4ef4e8f84ee8a391d2b0b27.r2.dev/branding/Logo_Overplay_2.png"
   );
 
   // Mock / Simulador de Datos
