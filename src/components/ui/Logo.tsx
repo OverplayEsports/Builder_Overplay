@@ -5,7 +5,7 @@ interface LogoProps {
   compact?: boolean;
 }
 
-const LOGO_SRC = "/images/Logo_Overplay_2.png";
+const LOGO_SRC = "https://pub-def6d9ceb4ef4e8f84ee8a391d2b0b27.r2.dev/branding/Logo_Overplay_2.png";
 
 /** Logotipo de marca Overplay con icono oficial Logo_Overplay_2.png + wordmark. */
 export function Logo({ className, compact = false }: LogoProps) {
@@ -17,6 +17,9 @@ export function Logo({ className, compact = false }: LogoProps) {
         <img
           src={LOGO_SRC}
           alt="Logo Overplay"
+          onError={(e) => {
+            e.currentTarget.src = "./images/Logo_Overplay_2.png";
+          }}
           className="h-full w-full object-contain drop-shadow-[0_2px_12px_rgba(249,115,22,0.45)]"
         />
       </span>
