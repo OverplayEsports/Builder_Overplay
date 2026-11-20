@@ -18,6 +18,7 @@ import {
   User,
   Copy,
   ArrowUpRight,
+  ChevronDown,
 } from "lucide-react";
 import { useBuilder } from "../../context/BuilderContext";
 import { GRADIENT_PRESETS } from "../../data/initialData";
@@ -62,6 +63,11 @@ export function AlliesEditor() {
 
   const [editingAlly, setEditingAlly] = useState<AllyItem | null>(null);
   const [isNewAlly, setIsNewAlly] = useState(false);
+  const [expandedCardIds, setExpandedCardIds] = useState<Record<string, boolean>>({});
+
+  const toggleCardExpanded = (id: string) => {
+    setExpandedCardIds((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
 
   // SQL Modal state
   const [showSqlModal, setShowSqlModal] = useState(false);
@@ -364,20 +370,30 @@ ON CONFLICT (id) DO UPDATE SET
 
       {/* Allies Grid List */}
       <div className="mt-8">
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 items-start">
           {allies.map((ally, index) => {
+            const isExpanded = Boolean(expandedCardIds[ally.id]);
+            const hasLongDescription = Boolean(
+              ally.description && ally.description.trim().length > 80
+            );
+
             return (
               <article
                 key={ally.id}
-                className="isolate group relative flex h-full min-h-[380px] sm:min-h-[420px] flex-col justify-end overflow-hidden rounded-3xl border border-white/[0.08] bg-[#0c0c10] p-6 text-center transition-all duration-300 hover:-translate-y-1.5 hover:border-violet-400/40 hover:shadow-[0_20px_50px_-20px_rgba(139,92,246,0.4)]"
+                onClick={() => toggleCardExpanded(ally.id)}
+                className={cn(
+                  "isolate group relative flex w-full self-start min-h-[400px] sm:min-h-[430px] flex-col overflow-hidden rounded-3xl border border-white/[0.08] bg-[#0c0c10] px-6 pb-6 pt-0 text-center transition-all duration-300 cursor-pointer select-none",
+                  "hover:-translate-y-1.5 hover:border-violet-400/40 hover:shadow-[0_20px_50px_-20px_rgba(139,92,246,0.4)]",
+                  isExpanded && "border-violet-400/50 shadow-[0_20px_50px_-20px_rgba(139,92,246,0.45)] ring-1 ring-violet-400/20"
+                )}
               >
                 {/* 1. Fondo superior: Imagen degradada hacia abajo a la altura del nombre */}
-                <div className="absolute inset-x-0 top-0 h-[260px] sm:h-[280px] overflow-hidden rounded-t-3xl pointer-events-none">
+                <div className="absolute inset-x-0 top-0 h-[260px] sm:h-[280px] overflow-hidden rounded-t-3xl pointer-events-none bg-[#0c0c10]">
                   {ally.avatarType === "image" && ally.avatarImage ? (
                     <img
                       src={ally.avatarImage}
                       alt={ally.name}
-                      className="h-full w-full object-cover object-top transition-transform duration-700 will-change-transform group-hover:scale-105"
+                      className="h-full w-full object-cover object-top"
                     />
                   ) : (
                     <div
@@ -392,7 +408,10 @@ ON CONFLICT (id) DO UPDATE SET
                 </div>
 
                 {/* Top Action Tools */}
-                <div className="absolute right-3 top-3 flex items-center gap-1 opacity-0 transition-opacity duration-200 group-hover:opacity-100 z-30 bg-[#07070a]/90 backdrop-blur-md rounded-lg p-1 border border-white/10">
+                <div
+                  onClick={(e) => e.stopPropagation()}
+                  className="absolute right-3 top-3 flex items-center gap-1 opacity-0 transition-opacity duration-200 group-hover:opacity-100 z-30 bg-[#07070a]/90 backdrop-blur-md rounded-lg p-1 border border-white/10"
+                >
                   <button
                     onClick={() => moveAlly(ally.id, "left")}
                     disabled={index === 0}
@@ -430,7 +449,10 @@ ON CONFLICT (id) DO UPDATE SET
                 </div>
 
                 {/* Botón flotante para subir directo a R2 */}
-                <div className="absolute top-3 left-3 z-20">
+                <div
+                  onClick={(e) => e.stopPropagation()}
+                  className="absolute top-3 left-3 z-20"
+                >
                   <input
                     ref={(el) => (cardFileInputRefs.current[ally.id] = el)}
                     type="file"
@@ -459,8 +481,8 @@ ON CONFLICT (id) DO UPDATE SET
                   </button>
                 </div>
 
-                {/* Main Card Content (Textos bajados hacia la línea divisoria) */}
-                <div className="relative z-10 flex flex-col items-center mt-auto">
+                {/* Main Card Content (Posición superior fija que no se desplaza al expandir) */}
+                <div className="relative z-10 flex flex-col items-center pt-[180px] sm:pt-[200px] w-full">
                   {/* Badge & Name & Description */}
                   <span className="rounded-full border border-violet-400/25 bg-[#0c0c10]/90 px-3.5 py-1 font-display text-[9px] font-bold uppercase tracking-[0.22em] text-violet-200/90 shadow-sm">
                     {ally.badge}
@@ -468,13 +490,36 @@ ON CONFLICT (id) DO UPDATE SET
                   <h3 className="mt-2.5 font-display text-xl sm:text-2xl font-bold uppercase italic tracking-wide text-white drop-shadow-md">
                     {ally.name}
                   </h3>
-                  <p className="mt-2 text-xs sm:text-sm leading-relaxed text-white/55 line-clamp-3">
+                  <p
+                    className={cn(
+                      "mt-2 text-xs sm:text-sm leading-relaxed text-white/60 transition-colors duration-200",
+                      isExpanded
+                        ? "line-clamp-none whitespace-pre-line text-white/85 text-left w-full"
+                        : "line-clamp-3 text-center"
+                    )}
+                  >
                     {ally.description}
                   </p>
+
+                  {/* Indicador sutil de despliegue si la descripción es larga */}
+                  {hasLongDescription && (
+                    <div className="mt-2.5 inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-0.5 text-[10px] font-semibold text-white/50 transition-colors group-hover:border-violet-400/40 group-hover:text-violet-200">
+                      <span>{isExpanded ? "Menos info" : "Ver info completa"}</span>
+                      <ChevronDown
+                        className={cn(
+                          "h-3 w-3 transition-transform duration-300",
+                          isExpanded && "rotate-180"
+                        )}
+                      />
+                    </div>
+                  )}
                 </div>
 
                 {/* Social Buttons (sin botón de canal) & Editar Casilla */}
-                <div className="relative z-10 mt-5 space-y-3 border-t border-white/[0.08] pt-3.5">
+                <div
+                  onClick={(e) => e.stopPropagation()}
+                  className="relative z-10 mt-auto pt-4 space-y-3 border-t border-white/[0.08]"
+                >
                   <div className="flex items-center justify-center gap-1.5">
                     {SOCIAL_LIST.map((platform) => {
                       const isEnabled = ally.socials?.[platform]?.enabled ?? false;
